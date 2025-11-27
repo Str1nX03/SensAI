@@ -3,5 +3,5 @@ langchain
 langgraph
 langchain_groq
 langchain_core
-langchain_community
+langchain_tavily
 ipykernel
