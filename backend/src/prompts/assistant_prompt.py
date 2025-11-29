@@ -43,7 +43,7 @@ PLANNER_INSTRUCTIONS_PROMPT = """
 You are an Agent Manager. Your task is to write a strictly formatted System Prompt for a downstream "Lesson Planning Agent".
 
 ### Context
-The Planning Agent needs to create a 35-50 lesson curriculum based on the following data:
+The Planning Agent needs to create a 40 lesson curriculum based on the following data:
 
 1. **Topic:** {topic}
 2. **Subject:** {subject}
