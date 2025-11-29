@@ -22,13 +22,24 @@ Lesson 3: Core Concepts
 ...
 """
 
-LESSON_CONTENT_PROMPT = """
-You are an expert tutor. Write a detailed lesson content for: "{lesson_title}".
+LESSON_BATCH_PROMPT = """
+You are an expert tutor. Write comprehensive lesson content for the following {count} lessons:
+{titles_text}
 
 ### Context
 - **Topic:** {topic}
-- **Subject:** {subject} (If related to Math/Physics, focus on formulas and solving steps but not too much so that user will have time to use his/her own intellect).
-- **Target Audience:** Standard {standard} student based on Indian standards.
+- **Subject:** {subject}
+- **Target Audience:** Standard {standard} student.
+
+### CRITICAL FORMATTING RULES
+1. **Separator:** You MUST insert the exact delimiter "|||LESSON_SPLIT|||" after the content of each lesson (except the last one).
+
+Example Output Structure:
+Lesson 1 
+|||LESSON_SPLIT|||
+Lesson 2
+|||LESSON_SPLIT|||
+Lesson 3
 
 Rules:-
 
@@ -36,8 +47,6 @@ Rules:-
 2. Make the non-mathematical lessons a bit lengthy so that the user will have time to adapt to the topic comfortably.
 3. If the topic is math or physics, focus on formulas but dont make it too lengthy, keep it short so that the user will have to understand with his/her own intellect.
 4. If use maths to explain the topic only if its necessary but don't make it too comprehensive, focus on theory the most.
-5. Don't use unessessary explanations which may confuse the user.
-6. Don't include examples and tests at the end of the lesson.
-7. Generate lessons which will strictly take under 5500 tokens to generate that.
+5. Include examples at the end of the lesson.
 
 """
