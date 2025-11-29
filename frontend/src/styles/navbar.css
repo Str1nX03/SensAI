@@ -1,0 +1,96 @@
+.nav-shell {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: max-content; /* Ensures it doesn't stretch */
+}
+
+/* Navbar Container */
+.nav-bar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(0, 0, 0, 0.4); /* Darkened slightly for better contrast */
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Nav Pill */
+.nav-pill {
+  position: relative;
+  padding: 0.45rem 1.2rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+/* Hover state */
+.nav-pill:hover {
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ACTIVE tab */
+.nav-pill-active {
+  color: #e5f3ff;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.2) 0, rgba(255, 255, 255, 0.05) 60%);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.1),
+    0 0 35px rgba(255, 255, 255, 0.1);
+}
+
+/* Glow streak */
+.nav-glow {
+  position: absolute;
+  bottom: -0.35rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 65%;
+  height: 6px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255,255,255,0.6) 0, transparent 70%);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* --- RESPONSIVE LOGIC (Replaces the React State) --- */
+
+/* Default: Desktop */
+.nav-icon-container {
+  display: none; /* Hide icon on desktop to match your original design */
+}
+.nav-text {
+  display: block;
+}
+
+/* Mobile: Switch to Icons */
+@media (max-width: 768px) {
+  .nav-pill { 
+    padding: 0.6rem 0.8rem; /* Adjusted padding for icon-only look */
+  }
+  
+  .nav-text { 
+    display: none; /* Hide text */
+  }
+  
+  .nav-icon-container {
+    display: flex; /* Show icon */
+    align-items: center;
+    justify-content: center;
+  }
+}

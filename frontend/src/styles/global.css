@@ -1,0 +1,91 @@
+/* ROOT THEMES -----------------------------*/
+:root {
+    --bg-app:#000; --bg-surface:#0a0a0a; --bg-surface-hover:#111;
+    --border-subtle:#222; --border-strong:#333; --border-active:#fff;
+    --text-primary:#ededed; --text-secondary:#888; --text-tertiary:#444; --text-quaternary:#03ae00;
+    --accent:#fff; --accent-fg:#000; --danger:#ff3333;
+    --radius:6px; --max-width:1600px;
+    --font-sans:'Inter',sans-serif; --font-mono:'JetBrains Mono',monospace;
+    --bg-app:#000;
+}
+
+html {
+    scrollbar-gutter: stable;
+}
+
+/* RESET ----------------------------------*/
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+    background:var(--bg-app);color:var(--text-primary);
+    font-family:var(--font-sans);line-height:1.6;min-height:100vh;
+    display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;
+}
+
+
+/* UTILITY --------------------------------*/
+.text-center{text-align:center;} .hidden{display:none!important;}
+.mt-4{margin-top:2rem;} .mb-3{margin-bottom:1rem;}
+.skip-to-main{position:absolute;left:-9999px;}
+.skip-to-main:focus{left:20px;top:20px;background:var(--accent);color:var(--bg-app);padding:10px;}
+
+main{max-width:var(--max-width);margin:auto;padding:3rem 4rem;width:100%;}
+
+/* TYPOGRAPHY -----------------------------*/
+h1,h2,h3,h4{font-weight:600;color:var(--text-primary);}
+h1{font-size:3rem;margin-bottom:1rem;} h2{font-size:1.75rem;margin-bottom:1rem;}
+h3{font-size:1.25rem;} p{color:var(--text-secondary);margin-bottom:1.5rem;}
+
+/* NAVBAR --------------------------------*/
+.navbar{
+    border-bottom:1px solid var(--border-subtle);
+    padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;
+    backdrop-filter:blur(10px);background:rgba(0,0,0,.7);position:sticky;top:0;z-index:50;
+}
+.nav-logo{font-family:var(--font-mono);font-weight:700;font-size:1.1rem;letter-spacing:-0.05em;}
+
+/* BUTTONS --------------------------------*/
+.btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    height:44px;padding:0 1.2rem;font-size:.9rem;font-weight:500;border-radius:var(--radius);
+    transition:.2s;border:1px solid transparent;cursor:pointer;
+}
+
+.btn-primary{background:var(--accent);color:var(--accent-fg);}
+.btn-primary:hover{opacity:.9;transform:translateY(-2px);}
+.btn-secondary{border:1px solid var(--border-strong);color:var(--text-primary);}
+.btn-secondary:hover{background:var(--bg-surface-hover);border-color:var(--text-primary);}
+.btn-danger{color:var(--danger);background:#150303;border:1px solid #331111;} 
+
+/* CARDS ----------------------------------*/
+.glass-card,.feature-card,.auth-card,.lesson-card{
+    background:var(--bg-surface);border:1px solid var(--border-subtle);
+    border-radius:var(--radius);padding:2rem;transition:.2s;
+}
+.glass-card:hover,.feature-card:hover{background:var(--bg-surface-hover);border-color:var(--border-strong);}
+
+/* FORM -----------------------------------*/
+.form-input{
+    width:100%;padding:.75rem 1rem;border-radius:var(--radius);
+    background:var(--bg-app);border:1px solid var(--border-strong);color:var(--text-primary);
+}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);outline:none;}
+.form-group{margin-bottom:1.25rem;} .form-label{font-size:.8rem;text-transform:uppercase;color:var(--text-secondary);}
+
+/* FAB ------------------------------------*/
+.fab{
+    position:fixed;right:2rem;bottom:2rem;background:var(--accent);color:var(--accent-fg);
+    border-radius:25px;height:50px;min-width:50px;padding:0 18px;
+    box-shadow:0 4px 20px rgba(0,0,0,.5);display:flex;align-items:center;gap:0;transition:.3s;
+}
+.fab:hover{padding-right:24px;gap:10px;} .fab-text{opacity:0;max-width:0;transition:.3s;}
+.fab:hover .fab-text{opacity:1;max-width:120px;} .fab-icon{transition:.3s;}
+.fab:hover .fab-icon{transform:rotate(90deg);}
+
+/* MODAL ----------------------------------*/
+.modal-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.85);opacity:0;transition:.2s;pointer-events:none;}
+.modal-overlay.active{opacity:1;pointer-events:all;}
+.modal-content{background:var(--bg-app);padding:2rem;border-radius:var(--radius);max-width:600px;width:100%;}
+
+/* RESPONSIVE -----------------------------*/
+@media(max-width:768px){main{padding:2rem;}h1{font-size:2.2rem;}}

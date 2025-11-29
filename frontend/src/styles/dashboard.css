@@ -1,0 +1,15 @@
+.dashboard-page{padding:3rem;margin:auto;max-width:var(--max-width);}
+
+.generate-box{
+    max-width:500px;margin-bottom:2rem;padding:2rem;border-radius:var(--radius);
+    background:var(--bg-surface);border:1px solid var(--border-subtle);
+}
+
+.course-list{display:grid;gap:1rem;margin-top:1.5rem;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}
+
+.course-card{
+    padding:1.2rem;border:1px solid var(--border-subtle);border-radius:var(--radius);
+    background:var(--bg-surface-hover);cursor:pointer;transition:.2s;
+}
+.course-card:hover{transform:translateY(-2px);border-color:var(--accent);}

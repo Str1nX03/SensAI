@@ -1,0 +1,126 @@
+/* src/styles/display-cards.css */
+
+/* The Grid Container */
+.dc-grid {
+  display: grid;
+  grid-template-areas: 'stack';
+  place-items: center;
+  opacity: 0;
+  animation: dc-fade-in 0.7s forwards;
+}
+
+@keyframes dc-fade-in {
+  to { opacity: 1; }
+}
+
+/* Individual Card Styling */
+.dc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  
+  /* Dimensions & Skew */
+  height: 9rem;       /* h-36 */
+  width: 22rem;       /* w-[22rem] */
+  transform: skewY(-8deg); /* -skew-y-[8deg] */
+  
+  /* Appearance */
+  border-radius: 0.75rem; /* rounded-xl */
+  border: 2px solid var(--border-subtle, #333);
+  background: rgba(20, 20, 20, 0.7); /* bg-muted/70 */
+  backdrop-filter: blur(4px);
+  user-select: none;
+  
+  /* Spacing */
+  padding: 0.75rem 1rem;
+  
+  /* Transition */
+  transition: all 0.7s ease;
+  grid-area: stack; /* Stacks them on top of each other */
+}
+
+/* Hover State for the Card */
+.dc-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(30, 30, 30, 1);
+  z-index: 10; /* Bring to front on hover */
+}
+
+/* The Gradient "Shine" Effect (::after) */
+.dc-card::after {
+  content: '';
+  position: absolute;
+  right: -0.25rem;
+  top: -5%;
+  height: 110%;
+  width: 20rem;
+  background: linear-gradient(to left, rgba(0,0,0,1), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Header Section (Icon + Title) */
+.dc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dc-icon-box {
+  display: inline-flex;
+  padding: 0.25rem;
+  border-radius: 9999px;
+  background: #1e40af; /* blue-800 */
+  color: #93c5fd;     /* blue-300 */
+}
+
+.dc-title {
+  font-size: 1.125rem; /* text-lg */
+  font-weight: 500;
+  color: #3b82f6;      /* text-blue-500 */
+}
+
+/* Content */
+.dc-desc {
+  font-size: 1.125rem;
+  white-space: nowrap;
+  color: var(--text-primary, #fff);
+}
+
+.dc-date {
+  font-size: 0.875rem;
+  color: var(--text-secondary, #888);
+}
+
+/* --- Positioning Variants (Previously handled by map) --- */
+
+/* Card 1: Top */
+.dc-card-1 {
+  z-index: 3;
+  filter: grayscale(100%);
+}
+.dc-card-1:hover {
+  transform: skewY(-8deg) translateY(-2.5rem); /* Lift up */
+  filter: grayscale(0%);
+}
+
+/* Card 2: Middle */
+.dc-card-2 {
+  z-index: 2;
+  transform: skewY(-8deg) translateX(4rem) translateY(2.5rem);
+  filter: grayscale(100%);
+}
+.dc-card-2:hover {
+  transform: skewY(-8deg) translateX(4rem) translateY(0); /* Lift up */
+  filter: grayscale(0%);
+}
+
+/* Card 3: Bottom */
+.dc-card-3 {
+  z-index: 1;
+  transform: skewY(-8deg) translateX(8rem) translateY(5rem);
+}
+.dc-card-3:hover {
+  transform: skewY(-8deg) translateX(8rem) translateY(2.5rem);
+}

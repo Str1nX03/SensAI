@@ -1,0 +1,75 @@
+.auth-container{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.auth-card{
+    max-width:400px;
+    width:100%;
+    padding:2rem;
+    background:rgba(20,20,20,.7);
+    backdrop-filter:blur(12px);
+    border:1px solid var(--border-subtle);
+    border-radius:var(--radius);
+    text-align:center;
+}
+
+/* Titles */
+.auth-title{ font-size:1.8rem; margin-bottom:.4rem; }
+.auth-sub{ color:var(--text-secondary); margin-bottom:2rem; }
+
+/* Inputs */
+.form-group{ margin-bottom:1.2rem; text-align:left; }
+label{ color:var(--text-secondary); font-size:.85rem; }
+.form-input{
+    width:100%;
+    padding:.85rem 1rem;
+    background:#000;
+    color:var(--text-primary);
+    border:1px solid var(--border-strong);
+    border-radius:var(--radius);
+}
+
+/* Button */
+.login-btn{
+    margin-top:1rem;
+    width:100%;
+    font-weight:600;
+}
+
+/* Login <-> Register switch */
+.auth-switch{
+    margin-top:1.5rem;
+    font-size:.9rem;
+}
+.auth-switch a{
+    color:#50aaff;
+    text-decoration:underline;
+}
+
+/* Back link */
+.back-home{
+    display:block;
+    margin-top:2rem;
+    font-size:.8rem;
+    color:var(--text-secondary);
+}
+
+/* Fade entrance animation */
+.auth-animate{
+    opacity:0;
+    transform:translateY(25px);
+    animation:rise .7s ease-out forwards;
+}
+
+@keyframes rise{
+    to{opacity:1; transform:translateY(0);}
+}
+
+@media (max-width:768px){
+    .auth-container{
+        padding-top:100px; /* more space on small screens */
+    }
+}
