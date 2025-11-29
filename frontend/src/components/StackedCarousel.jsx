@@ -1,87 +1,107 @@
-import { useState, useEffect, useCallback } from "react";
+// src/components/StackedCarousel.jsx
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Linkedin } from "lucide-react";
 import "../styles/stacked-carousel.css";
 
 export default function StackedCarousel({ testimonials }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [active, setActive] = useState(0);
+  const [autoplay, setAutoplay] = useState(true);
 
-  // 1. We use useCallback to make this function "stable".
-  // This allows us to use it inside useEffect without causing infinite loops.
-  const handleNext = useCallback(() => {
-    if (!testimonials || testimonials.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-  }, [testimonials]);
+  // 1. Calculate count safely first (so hooks can use it)
+  const count = testimonials ? testimonials.length : 0;
 
-  const handlePrev = () => {
-    if (!testimonials || testimonials.length === 0) return;
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+  // 2. Call useEffect unconditionally (Hooks must always run)
+  useEffect(() => {
+    if (!autoplay || count === 0) return;
+    const interval = setInterval(() => {
+      setActive((prev) => (prev + 1) % count);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [autoplay, count]);
+
+  // 3. NOW it is safe to return early if no data exists
+  if (!testimonials || count === 0) return null;
+
+  // 4. Helper functions
+  const handleNext = () => {
+    setActive((prev) => (prev + 1) % count);
+    setAutoplay(false);
   };
 
-  // 2. useEffect is now called BEFORE any 'return null' statements.
-  useEffect(() => {
-    // If no data, do nothing (but the hook still "runs" technically, satisfying React)
-    if (!testimonials || testimonials.length === 0) return;
+  const handlePrev = () => {
+    setActive((prev) => (prev - 1 + count) % count);
+    setAutoplay(false);
+  };
 
-    const timer = setInterval(() => {
-      handleNext();
-    }, 5000);
+  // Determine indexes for the stack
+  const activeIndex = active;
+  const nextIndex = (active + 1) % count;
+  const prevIndex = (active - 1 + count) % count;
 
-    return () => clearInterval(timer);
-  }, [currentIndex, handleNext, testimonials]); // 3. dependencies are now correct
-
-  // 4. NOW we can do the early return check
-  if (!testimonials || testimonials.length === 0) return null;
-
-  const current = testimonials[currentIndex];
+  const activePerson = testimonials[activeIndex];
+  const nextPerson = testimonials[nextIndex];
+  const prevPerson = testimonials[prevIndex];
 
   return (
     <div className="stacked-wrapper">
       
-      {/* LEFT: Image Stack */}
-      <div className="card-stack">
-        <div className="card-layer card-back-left" />
-        <div className="card-layer card-back-right" />
+      {/* LEFT: Card Stack */}
+      <div className="card-stack animate-card">
         
-        <div key={currentIndex} className="card-layer card-front animate-card">
-           <img 
-             src={current.src} 
-             alt={current.name} 
-             className="card-img"
-             onError={(e) => e.target.src = "https://via.placeholder.com/300"}
-           />
+        {/* Background Card (Left/Prev) - Blurred Image */}
+        <div 
+            className="card-layer card-back-left"
+            style={{ backgroundImage: `url(${prevPerson.src})` }}
+        />
+        
+        {/* Background Card (Right/Next) - Blurred Image */}
+        <div 
+            className="card-layer card-back-right"
+            style={{ backgroundImage: `url(${nextPerson.src})` }}
+        />
+
+        {/* Foreground Card (Active) */}
+        <div className="card-layer card-front">
+          <img 
+            src={activePerson.src} 
+            alt={activePerson.name} 
+            className="card-img"
+          />
         </div>
+
       </div>
 
       {/* RIGHT: Content */}
       <div className="content-col">
-        <div key={currentIndex} className="animate-text" style={{display:'flex', flexDirection:'column'}}>
-            <h2 className="person-name">{current.name}</h2>
-            <p className="person-role">{current.designation}</p>
-            <p className="person-quote">"{current.quote}"</p>
+        {/* Key changes to force animation reset on change */}
+        <div key={active} className="animate-text">
+            <h2 className="person-name">{activePerson.name}</h2>
+            <p className="person-role">{activePerson.designation}</p>
+            
+            <p className="person-quote">"{activePerson.quote}"</p>
 
-            {current.linkedin && (
-              <a 
-                href={current.linkedin} 
-                target="_blank" 
-                rel="noreferrer" 
+            {activePerson.linkedin && (
+            <a 
+                href={activePerson.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="linkedin-btn"
-              >
+            >
                 <Linkedin size={18} />
-                <span>Connect on LinkedIn</span>
-              </a>
+                <span>LinkedIn</span>
+            </a>
             )}
         </div>
 
         <div className="nav-row">
-          <button onClick={handlePrev} className="nav-btn" aria-label="Previous">
-            <ArrowLeft size={24} />
-          </button>
-          <button onClick={handleNext} className="nav-btn" aria-label="Next">
-            <ArrowRight size={24} />
-          </button>
+            <button onClick={handlePrev} className="nav-btn">
+                <ArrowLeft size={20} />
+            </button>
+            <button onClick={handleNext} className="nav-btn">
+                <ArrowRight size={20} />
+            </button>
         </div>
       </div>
-
     </div>
   );
 }

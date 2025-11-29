@@ -2,7 +2,7 @@
 :root {
     --bg-app:#000; --bg-surface:#0a0a0a; --bg-surface-hover:#111;
     --border-subtle:#222; --border-strong:#333; --border-active:#fff;
-    --text-primary:#ededed; --text-secondary:#888; --text-tertiary:#444; --text-quaternary:#03ae00;
+    --text-primary:#ededed; --text-secondary:#888; --text-tertiary:#444; --text-quaternary:#03ae00; --text-quinary: #2c80ff;
     --accent:#fff; --accent-fg:#000; --danger:#ff3333;
     --radius:6px; --max-width:1600px;
     --font-sans:'Inter',sans-serif; --font-mono:'JetBrains Mono',monospace;

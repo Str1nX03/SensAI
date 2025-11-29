@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4rem; /* Space between image and text */
+    gap: 4rem;
     padding: 2rem;
 }
 
@@ -33,14 +33,14 @@
 /* The decorative cards behind */
 .card-back-left {
     transform: rotate(-10deg) translateX(-15px);
-    background: rgba(255, 255, 255, 0.05); /* Glass effect */
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 1;
 }
 
 .card-back-right {
     transform: rotate(6deg) translateX(15px);
-    background: rgba(255, 255, 255, 0.08); /* Glass effect */
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 2;
 }
@@ -50,7 +50,6 @@
     z-index: 10;
     transform: rotate(0deg);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    /* Ensure the image fills this container */
     overflow: hidden; 
 }
 
@@ -88,7 +87,7 @@
 .person-quote {
     font-size: 1.1rem;
     line-height: 1.6;
-    color: #ccc; /* Slightly brighter than secondary */
+    color: #ccc;
     margin-bottom: 2.5rem;
     min-height: 80px;
 }
@@ -99,7 +98,7 @@
     gap: 0.6rem;
     width: fit-content;
     padding: 0.6rem 1.2rem;
-    margin-bottom: 2rem; /* Space between button and arrows */
+    margin-bottom: 2rem;
     
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -113,17 +112,16 @@
 }
 
 .linkedin-btn:hover {
-    background: #0077b5; /* LinkedIn Blue */
+    background: #0077b5;
     border-color: #0077b5;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
 }
 
-/* Update nav-row to ensure it sits at the bottom */
 .nav-row {
     display: flex;
     gap: 1rem;
-    margin-top: auto; /* Pushes it down if container is tall */
+    margin-top: auto;
 }
 
 /* --- CONTROLS --- */
@@ -160,19 +158,19 @@
 @keyframes cardEntrance {
     0% {
         opacity: 0;
-        transform: translateY(60px) scale(0.9); /* Start lower and smaller */
+        transform: translateY(60px) scale(0.9);
     }
     100% {
         opacity: 1;
-        transform: translateY(0) scale(1); /* End in place */
+        transform: translateY(0) scale(1);
     }
 }
 
 /* Text Entrance: Staggered Slide */
 .animate-text {
-    opacity: 0; /* Hidden initially for delay */
+    opacity: 0;
     animation: textEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    animation-delay: 0.1s; /* Slight delay after image */
+    animation-delay: 0.1s;
 }
 
 @keyframes textEntrance {
@@ -206,6 +204,6 @@
     }
 
     .content-col {
-        align-items: center; /* Center text on mobile */
+        align-items: center;
     }
 }

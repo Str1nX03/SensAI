@@ -68,11 +68,10 @@
   pointer-events: none;
 }
 
-/* --- RESPONSIVE LOGIC (Replaces the React State) --- */
 
 /* Default: Desktop */
 .nav-icon-container {
-  display: none; /* Hide icon on desktop to match your original design */
+  display: none;
 }
 .nav-text {
   display: block;
@@ -81,15 +80,15 @@
 /* Mobile: Switch to Icons */
 @media (max-width: 768px) {
   .nav-pill { 
-    padding: 0.6rem 0.8rem; /* Adjusted padding for icon-only look */
+    padding: 0.6rem 0.8rem;
   }
   
   .nav-text { 
-    display: none; /* Hide text */
+    display: none;
   }
   
   .nav-icon-container {
-    display: flex; /* Show icon */
+    display: flex;
     align-items: center;
     justify-content: center;
   }

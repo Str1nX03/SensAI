@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { initBackground } from "../utils/scene";
 import "../styles/landing.css";
 import { initAnimations } from "../utils/animation";
 import Navbar from "../components/Navbar";
 import "../styles/navbar.css";
 import { Home, User, FileText, Briefcase } from "lucide-react";
+import RetroWaves from "../components/RetroWaveShader";
 
 const NAV_ITEMS = [
   { name:"Home", url:"/", icon:Home },
@@ -16,8 +16,7 @@ const NAV_ITEMS = [
 export default function Landing() {
 
   useEffect(() => {
-    initBackground();
-    initAnimations();  
+    initAnimations();   
   }, []);
 
   return (
@@ -27,53 +26,66 @@ export default function Landing() {
     <main id="main-content">
 
       <section className="hero-section" aria-label="Main hero section">
-        <div className="landing-container">
+        <div className="landing-container" style={{ position: "relative", overflow: "hidden" }}>
 
-          <canvas id="bg-canvas"></canvas>
-
-          <div
-            style={{
-              fontFamily: "var(--font-mono)",
-              color: "var(--text-quaternary)",
-              fontSize: ".9rem",
-              marginBottom: "1.5rem"
-            }}
-          >
-            {"> SYSTEM.INITIALIZED"}
+          {/* BACKGROUND LAYER */}
+          <div style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 0
+          }}>
+            <RetroWaves />
           </div>
 
-          <div className="hero-content">
-
-            <h1 className="hero-title">
-              Learn anything. <br />
-              <span style={{ color: "var(--text-secondary)" }}>Fast.</span>
-            </h1>
-
-            <p
-              className="hero-subtitle"
+          <div style={{ position: "relative", zIndex: 1 }}> 
+            <div
               style={{
-                color: "var(--text-secondary)",
-                fontSize: "1.1rem",
-                maxWidth: "600px",
-                margin: "0 auto 2.5rem auto"
+                fontFamily: "var(--font-mono)",
+                color: "var(--text-quaternary)",
+                fontSize: ".9rem",
+                marginBottom: "1.5rem"
               }}
             >
-              Experience personalized learning powered by intelligent AI agents that create customized lessons,
-              comprehensive study materials, and adaptive quizzes tailored just for you.
-            </p>
-
-            <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
-              <a href="/login" className="btn btn-primary">Start Learning</a>
-              <a href="/register" className="btn btn-secondary">Create Account</a>
+              {"> SYSTEM.INITIALIZED"}
             </div>
 
+            <div className="hero-content">
+
+              <h1 className="hero-title">
+                Learn anything. <br />
+                <span style={{ color: "var(--text-secondary)" }}>Fast.</span>
+              </h1>
+
+              <p
+                className="hero-subtitle"
+                style={{
+                  color: "var(--text-secondary)",
+                  fontSize: "1.1rem",
+                  maxWidth: "600px",
+                  margin: "0 auto 2.5rem auto"
+                }}
+              >
+                Experience personalized learning powered by intelligent AI agents that create customized lessons,
+                comprehensive study materials, and adaptive quizzes tailored just for you.
+              </p>
+              <div className="hero-cta" style={{ display: "flex", gap: "1rem", justifyContent: "center" }}></div>
+
+              <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                <a href="/login" className="btn btn-primary">Start Learning</a>
+                <a href="/register" className="btn btn-secondary">Create Account</a>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>
 
 
       {/* ================= FEATURES SECTION ================= */}
-      <section className="features-section" style={{ marginTop: "6rem" }}>
+      <section className="features-section" style={{ marginTop: "1rem", paddingBottom: "8rem" }}>
 
         <h2 className="text-center">How Our AI Agents Help You Learn</h2>
         <p className="text-center" style={{ marginBottom: "3rem", color: "var(--text-secondary)" }}>

@@ -1,13 +1,13 @@
 
 .landing-container {
     width: 100%;
-    height: 60vh;
-    position: relative;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
     flex-direction: column;
+    text-align: center;
+    padding: 4rem 1rem; 
 }
 
 .hero-system-boot {
@@ -21,7 +21,7 @@
 .features-grid {
     display: grid;
     grid-template-columns: repeat(1, 1fr);
-    margin: 4rem auto;
+    height: auto;
     gap: 0;
     width: 100%;
     border-bottom: 1px solid var(--border-subtle);
@@ -33,12 +33,16 @@
     }
 }
 
+.features-section {
+    margin-top: 0rem !important;
+}
+
 /* Card Container */
 .feature-card-new {
+    padding: 2rem 1.7rem;
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 2.5rem 2rem;
     overflow: hidden;
 
     /* Glass + glow aesthetic */

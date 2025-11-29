@@ -5,27 +5,31 @@ export default function ShaderBackground() {
   const mountRef = useRef(null);
 
   useEffect(() => {
-    // 1. SCENE SETUP
+    const currentMount = mountRef.current;
+    if (!currentMount) return;
+
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      currentMount.clientWidth / currentMount.clientHeight,
+      0.1,
+      1000
+    );
     camera.position.z = 3;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    
-    // Append to the mountRef div
-    const container = mountRef.current;
-    container.appendChild(renderer.domElement);
+    renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    currentMount.appendChild(renderer.domElement);
 
-    // 2. THE COOL SHADER (Restored)
-    const geometry = new THREE.IcosahedronGeometry(1.5, 64);
-    
+    // --- OPTIMIZATION: Reduced Detail (64 -> 30) ---
+    const geometry = new THREE.IcosahedronGeometry(1.4, 30);
+
     const material = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
         pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
-        color: { value: new THREE.Color("#00aaff") }, // Cyan/Blue
+        color: { value: new THREE.Color("#00aaff") },
       },
       wireframe: true,
       transparent: true,
@@ -34,7 +38,7 @@ export default function ShaderBackground() {
         varying vec3 vNormal;
         varying vec3 vPosition;
         
-        // Simplex Noise
+        // Simplex Noise (Standard)
         vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
         vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
         vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
@@ -85,7 +89,6 @@ export default function ShaderBackground() {
         void main() {
             vNormal = normal;
             vPosition = position;
-            // 0.3 amplitude for visible breathing effect
             float displacement = snoise(position * 2.0 + time * 0.5) * 0.3;
             vec3 newPosition = position + normal * displacement;
             gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
@@ -99,18 +102,11 @@ export default function ShaderBackground() {
         
         void main() {
             vec3 normal = normalize(vNormal);
-            // Light calculation
             vec3 lightDir = normalize(pointLightPos - vPosition);
             float diffuse = max(dot(normal, lightDir), 0.0);
-            
-            // Fresnel Glow
-            float fresnel = 1.0 - dot(normal, vec3(0.0, 0.0, 1.0));
-            fresnel = pow(fresnel, 2.0);
-            
-            vec3 finalColor = color * diffuse + color * fresnel * 0.8;
-            
-            // Output color with opacity
-            gl_FragColor = vec4(finalColor, 0.9); 
+            float fresnel = pow(1.0 - dot(normal, vec3(0.0, 0.0, 1.0)), 1.3);
+            vec3 finalColor = color * (diffuse * 1.4) + color * fresnel * 1.2;
+            gl_FragColor = vec4(finalColor, 1.0);
         }
       `
     });
@@ -118,7 +114,7 @@ export default function ShaderBackground() {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    // 3. ANIMATION LOOP
+    // --- ANIMATION LOOP ---
     let frameId;
     const animate = (t) => {
       material.uniforms.time.value = t * 0.0003;
@@ -129,49 +125,54 @@ export default function ShaderBackground() {
     };
     animate(0);
 
-    // 4. EVENT HANDLERS
+    // --- EVENT HANDLERS ---
     const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+      if (!currentMount) return;
+      const width = currentMount.clientWidth;
+      const height = currentMount.clientHeight;
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(width, height);
     };
 
     const handleMouseMove = (e) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      const vec = new THREE.Vector3(x, y, 0.5).unproject(camera);
-      const dir = vec.sub(camera.position).normalize();
-      const dist = -camera.position.z / dir.z;
-      const pos = camera.position.clone().add(dir.multiplyScalar(dist));
-      material.uniforms.pointLightPos.value = pos;
+      if (!currentMount) return;
+      const rect = currentMount.getBoundingClientRect();
+      
+      const x = -(((e.clientX - rect.left) / rect.width) * 2 - 1);
+      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+      const lightPos = new THREE.Vector3(x * 5, y * 5, 4);
+      material.uniforms.pointLightPos.value = lightPos;
     };
 
     window.addEventListener("resize", handleResize);
     window.addEventListener("mousemove", handleMouseMove);
 
+    // --- CLEANUP (CRITICAL FOR PERFORMANCE) ---
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("mousemove", handleMouseMove);
-      if(container) container.removeChild(renderer.domElement);
+      
+      if (currentMount && renderer.domElement) {
+        currentMount.removeChild(renderer.domElement);
+      }
+
       geometry.dispose();
       material.dispose();
+      renderer.dispose();
     };
   }, []);
 
   return (
-    <div 
-      ref={mountRef} 
+    <div
+      ref={mountRef}
       style={{
-        position: 'fixed', // 🔥 Covers entire screen regardless of parent
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 0, // Behind everything
-        pointerEvents: 'none', // Lets clicks pass through to buttons
-        background: '#000' // Fallback black if shader fails loading
-      }} 
+        position: 'absolute',
+        inset: 0,
+        zIndex: 0,
+      }}
     />
   );
 }

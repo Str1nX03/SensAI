@@ -3,75 +3,109 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export function initAnimations(){
+export function initAnimations() {
+  
+  // 1. SHARED HERO ANIMATIONS
 
-    /* 1) HERO TEXT FADE-IN WHEN PAGE LOADS */
-    gsap.from(".hero-title", {
-        opacity: 0,
-        y: 25,
-        duration: 1.2,
-        ease: "power3.out",
-        delay: .3
+  gsap.from(".hero-title", {
+    opacity: 0,
+    y: 30,
+    duration: 1.2,
+    ease: "power3.out",
+    delay: 0.2
+  });
+
+  gsap.from(".hero-subtitle", {
+    opacity: 0,
+    y: 20,
+    duration: 1.2,
+    ease: "power3.out",
+    delay: 0.4
+  });
+
+  gsap.from(".hero-cta", {
+    opacity: 0,
+    y: 15,
+    scale: 0.95,
+    duration: 1,
+    ease: "back.out(1.7)",
+    delay: 0.6
+  });
+
+  // Shader Animation
+  const shader = document.querySelector(".hero-left-shader");
+  if (shader) {
+    gsap.from(shader, {
+      opacity: 0,
+      x: -50,
+      duration: 1.5,
+      ease: "power3.out",
+      delay: 0.2
     });
+  }
 
-    gsap.from(".hero-subtitle", {
-        opacity: 0,
-        y: 20,
-        duration: 1.2,
-        ease: "power3.out",
-        delay: .6
+  // 2. LANDING 1 CARDS
+  const featureCards = document.querySelectorAll(".feature-card-new");
+  
+  if (featureCards.length > 0) {
+    gsap.set(featureCards, { opacity: 0, y: 50 });
+
+    ScrollTrigger.batch(featureCards, {
+      start: "top 85%",
+      onEnter: (batch) => gsap.to(batch, {
+        opacity: 1,
+        y: 0,
+        stagger: 0.2,
+        duration: 0.8,
+        ease: "power3.out"
+      })
     });
+  }
 
-    gsap.from(".cta-buttons", {
+  // 3. LANDING 2 CARDS (.dc-card)
+  const dcCards = document.querySelectorAll(".dc-card");
+  
+  if (dcCards.length > 0) {
+    gsap.from(dcCards, {
+      scrollTrigger: {
+        trigger: ".features-section",
+        start: "top 75%",
+      },
+      opacity: 0,
+      y: 60,
+      duration: 0.8,
+      stagger: 0.2,
+      ease: "back.out(1.7)", 
+      clearProps: "all"
+    });
+  }
+
+  // 4. ABOUT PAGE ANIMATIONS
+  const aboutTitle = document.querySelector(".about-title");
+  if (aboutTitle) {
+    gsap.from(".about-title", {
         opacity: 0,
-        scale: .92,
+        y: -30,
         duration: 1,
-        ease: "back.out(1.6)",
-        delay: 1
+        ease: "power4.out",
+        delay: 0.1
     });
 
-    /* 2) FEATURE CARDS — SCROLL REVEAL */
-    const features = document.querySelectorAll(".feature-card-new");
-
-    if(features.length > 0){
-        gsap.set(features,{ opacity:0, y:35 });
-
-        ScrollTrigger.batch(features,{
-            start:"top 90%",
-            onEnter:(cards)=> gsap.to(cards,{
-                opacity:1,
-                y:0,
-                stagger:.15,
-                duration:.65,
-                ease:"power3.out"
-            })
-        });
-    }
-
-    /* 3) Glass Cards (Dashboard, Lessons, Auth) */
-    const cards = document.querySelectorAll(".glass-card, .lesson-card, .auth-card");
-
-    if(cards.length > 0){
-        gsap.set(cards,{ opacity:0, y:25 });
-
-        ScrollTrigger.batch(cards,{
-            start:"top 93%",
-            onEnter:(el)=> gsap.to(el,{
-                opacity:1,
-                y:0,
-                stagger:.08,
-                duration:.5,
-                ease:"power2.out"
-            })
-        });
-    }
-
-    /* 4) Floating + button entrance= */
-    gsap.from(".fab",{
-        scale:.1,
-        rotation:180,
-        duration:.7,
-        ease:"back.out(1.8)",
-        delay:1.2
+    gsap.from(".about-subtitle", {
+        opacity: 0,
+        y: -10,
+        duration: 1,
+        ease: "power3.out",
+        delay: 0.3
     });
+
+    gsap.from(".about-carousel", {
+        opacity: 0,
+        scale: 0.9,
+        y: 40,
+        duration: 1.2,
+        ease: "elastic.out(1, 0.75)",
+        delay: 0.5
+    });
+  }
 }

@@ -4,7 +4,6 @@ import "../styles/navbar.css";
 export default function Navbar({ items }) {
   const location = useLocation();
 
-  // derive activeTab
   const activeTab = items.find(i => i.url === location.pathname)?.name || items[0].name;
 
   return (
@@ -20,12 +19,10 @@ export default function Navbar({ items }) {
               to={item.url}
               className={`nav-pill ${active ? "nav-pill-active" : ""}`}
             >
-              {/* Render Icon ALWAYS, let CSS decide size/display */}
               <div className="nav-icon-container">
                 <Icon size={18} />
               </div>
               
-              {/* Render Name ALWAYS, let CSS hide it on mobile */}
               <span className="nav-text">{item.name}</span>
 
               {active && <span className="nav-glow"/>}

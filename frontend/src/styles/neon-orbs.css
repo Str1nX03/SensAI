@@ -1,0 +1,76 @@
+/* src/styles/neon-orbs.css */
+
+.orb-position {
+    position: absolute;
+    transition: all 1.5s ease-out;
+    opacity: 0;
+}
+
+.orb-position.visible {
+    opacity: 1;
+    transform: translate(0, 0);
+}
+
+/* Positioning */
+.orb-top-left {
+    top: -40%; left: -20%; width: 80vw; height: 80vw;
+    max-width: 800px; max-height: 800px;
+    transform: translateY(-40px);
+}
+
+.orb-bottom-center {
+    bottom: -50%; left: 50%; width: 100vw; height: 100vw;
+    max-width: 1000px; max-height: 1000px;
+    transform: translateX(-50%) translateY(40px);
+    transition-delay: 0.3s;
+}
+
+.orb-top-right {
+    top: -30%; right: -25%; width: 70vw; height: 70vw;
+    max-width: 700px; max-height: 700px;
+    transform: translateX(40px);
+    transition-delay: 0.5s;
+}
+
+.orb-bottom-right {
+    bottom: -35%; right: -15%; width: 75vw; height: 75vw;
+    max-width: 750px; max-height: 750px;
+    transform: translateY(40px);
+    transition-delay: 0.7s;
+}
+
+/* Orb Design */
+.orb-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: relative;
+    background: radial-gradient(circle at 50% 50%, #050a18 0%, #050a18 90%, transparent 100%);
+    box-shadow: 
+      0 0 60px 2px rgba(59, 130, 246, 0.4),
+      0 0 100px 5px rgba(59, 130, 246, 0.2),
+      inset 0 0 60px 2px rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(100, 180, 255, 0.3);
+}
+
+.beam-light {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 60px;
+    height: 4px;
+    margin-left: -30px;
+    border-radius: 2px;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.5) 30%, rgba(150, 200, 255, 0.9) 70%, white 100%);
+    box-shadow: 0 0 20px 4px rgba(100, 180, 255, 0.8), 0 0 40px 8px rgba(59, 130, 246, 0.4);
+}
+
+/* Animations */
+.beam-spin-6 { animation: spin 6s linear infinite; }
+.beam-spin-7-reverse { animation: spin-reverse 7s linear infinite; }
+.beam-spin-8 { animation: spin 8s linear infinite; }
+.beam-spin-10-reverse { animation: spin-reverse 10s linear infinite; }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }

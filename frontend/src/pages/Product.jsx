@@ -5,14 +5,13 @@ import { useParams, useNavigate } from "react-router-dom";
 
 export default function Product() {
 
-  const { id } = useParams();      // course id from URL
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [course, setCourse] = useState(null);
   const [openLesson, setOpenLesson] = useState(null);
   const [showResources, setShowResources] = useState(false);
 
-  // Fetch course on load
   useEffect(() => {
     axios.get(`http://localhost:5000/api/course/${id}`)
       .then(res => {
@@ -52,7 +51,6 @@ export default function Product() {
 
       <div className="product-layout">
 
-        {/* LEFT SIDE — OVERVIEW + RESOURCES */}
         <div className="overview-section">
 
           <div className="glass-card mb-3">
@@ -84,7 +82,6 @@ export default function Product() {
         </div>
 
 
-        {/* RIGHT — LESSONS LIST */}
         <div className="lessons-section">
           <h2>Learning Path</h2>
 
@@ -103,7 +100,6 @@ export default function Product() {
                 <div className="lesson-content">
                   <div dangerouslySetInnerHTML={{ __html: lessons[lesson] }} />
 
-                  {/* QUIZ IF EXISTS */}
                   {tests?.[lesson] && (
                     <div className="quiz-section">
                       <h4>📝 Knowledge Check</h4>
@@ -120,7 +116,6 @@ export default function Product() {
       </div>
 
 
-      {/* FAB — CREATE NEW COURSE */}
       <button className="fab" onClick={() => navigate("/dashboard")}>
         <span className="fab-icon">＋</span>
         <span className="fab-text">New Course</span>

@@ -11,7 +11,6 @@ export function initScene() {
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.z = 3;
 
-    //💫 SHADER / PARTICLE / BLOB HERE (paste your old shader code)
 
     function animate() {
         requestAnimationFrame(animate);

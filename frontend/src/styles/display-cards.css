@@ -1,53 +1,52 @@
 /* src/styles/display-cards.css */
 
-/* The Grid Container */
 .dc-grid {
   display: grid;
   grid-template-areas: 'stack';
   place-items: center;
-  opacity: 0;
-  animation: dc-fade-in 0.7s forwards;
+  margin-top: 4rem; 
+  padding: 4rem 2rem; 
 }
 
 @keyframes dc-fade-in {
   to { opacity: 1; }
 }
 
-/* Individual Card Styling */
+/* --- INDIVIDUAL CARD STYLING --- */
 .dc-card {
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   
-  /* Dimensions & Skew */
-  height: 9rem;       /* h-36 */
-  width: 22rem;       /* w-[22rem] */
-  transform: skewY(-8deg); /* -skew-y-[8deg] */
+  /* Dimensions */
+  min-height: 14rem; 
+  width: 24rem;      
   
   /* Appearance */
-  border-radius: 0.75rem; /* rounded-xl */
-  border: 2px solid var(--border-subtle, #333);
-  background: rgba(20, 20, 20, 0.7); /* bg-muted/70 */
-  backdrop-filter: blur(4px);
+  border-radius: 1rem;
+  border: 2px solid var(--border-subtle);
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(8px);
   user-select: none;
   
   /* Spacing */
-  padding: 0.75rem 1rem;
+  padding: 1.5rem;
   
   /* Transition */
-  transition: all 0.7s ease;
-  grid-area: stack; /* Stacks them on top of each other */
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  grid-area: stack;
+  box-shadow: -10px 10px 20px rgba(0,0,0,0.5);
 }
 
-/* Hover State for the Card */
+/* --- HOVER STATE  --- */
 .dc-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
   background: rgba(30, 30, 30, 1);
-  z-index: 10; /* Bring to front on hover */
+  box-shadow: -20px 40px 60px rgba(0,0,0,0.7);
+  filter: grayscale(0%) brightness(1);
 }
 
-/* The Gradient "Shine" Effect (::after) */
 .dc-card::after {
   content: '';
   position: absolute;
@@ -60,67 +59,71 @@
   z-index: -1;
 }
 
-/* Header Section (Icon + Title) */
 .dc-header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .dc-icon-box {
   display: inline-flex;
-  padding: 0.25rem;
-  border-radius: 9999px;
-  background: #1e40af; /* blue-800 */
-  color: #93c5fd;     /* blue-300 */
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--primary-color);
 }
 
 .dc-title {
-  font-size: 1.125rem; /* text-lg */
-  font-weight: 500;
-  color: #3b82f6;      /* text-blue-500 */
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
 }
 
-/* Content */
 .dc-desc {
-  font-size: 1.125rem;
-  white-space: nowrap;
-  color: var(--text-primary, #fff);
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0;
+  flex-grow: 1;
 }
 
 .dc-date {
-  font-size: 0.875rem;
-  color: var(--text-secondary, #888);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 1.5rem;
+  text-align: right;
+  font-family: var(--font-mono);
 }
 
-/* --- Positioning Variants (Previously handled by map) --- */
+/* --- POSITIONING VARIANTS --- */
 
-/* Card 1: Top */
+/* CARD 1 */
 .dc-card-1 {
-  z-index: 3;
-  filter: grayscale(100%);
+  z-index: 1;
+  transform: skewY(-8deg) translateX(0) translateY(0);
+  filter: grayscale(100%) brightness(0.7);
 }
 .dc-card-1:hover {
-  transform: skewY(-8deg) translateY(-2.5rem); /* Lift up */
-  filter: grayscale(0%);
+  transform: skewY(-9deg) translateX(0) translateY(-7rem);
 }
 
-/* Card 2: Middle */
+/* CARD 2 */
 .dc-card-2 {
   z-index: 2;
-  transform: skewY(-8deg) translateX(4rem) translateY(2.5rem);
-  filter: grayscale(100%);
+  transform: skewY(-8deg) translateX(3rem) translateY(4rem);
+  filter: grayscale(100%) brightness(0.8);
 }
 .dc-card-2:hover {
-  transform: skewY(-8deg) translateX(4rem) translateY(0); /* Lift up */
-  filter: grayscale(0%);
+  transform: skewY(-9deg) translateX(3rem) translateY(-3rem);
 }
 
-/* Card 3: Bottom */
+/* CARD 3 */
 .dc-card-3 {
-  z-index: 1;
-  transform: skewY(-8deg) translateX(8rem) translateY(5rem);
+  z-index: 3;
+  transform: skewY(-8deg) translateX(6rem) translateY(8rem);
 }
 .dc-card-3:hover {
-  transform: skewY(-8deg) translateX(8rem) translateY(2.5rem);
+  transform: skewY(-9deg) translateX(6rem) translateY(3rem);
 }

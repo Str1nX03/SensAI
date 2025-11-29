@@ -1,8 +1,8 @@
-// src/pages/About.jsx
 import { useEffect } from "react";
 import Navbar from "../components/Navbar";
-import { initBackground } from "../utils/scene";
 import StackedCarousel from "../components/StackedCarousel";
+import NeonOrbs from "../components/NeonOrbs";
+import { initAnimations } from "../utils/animation";
 import { Home, User, FileText, Briefcase } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 export default function AboutUs() {
   
   useEffect(() => {
-    initBackground();
+    initAnimations();
   }, []);
 
   const people = [
@@ -38,19 +38,41 @@ export default function AboutUs() {
   return (
     <>
       <Navbar items={NAV_ITEMS} />
+      
+      {/* Background Component */}
+      <NeonOrbs />
 
       <main 
         id="main-content" 
         style={{
+          position: "relative",
           minHeight: "100vh",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          paddingTop: "80px"
+          paddingTop: "80px",
+          zIndex: 1
         }}
       >
-        {/* Render the new Stacked Style Carousel */}
-        <StackedCarousel testimonials={people} />
+        <div className="about-header" style={{ marginBottom: "2rem", textAlign: "center" }}>
+            <h1 className="about-title" style={{ 
+                fontSize: "3rem", 
+                fontWeight: "700", 
+                color: "#fff",
+                marginBottom: "0.5rem"
+            }}>
+                Meet The Minds
+            </h1>
+            <p className="about-subtitle" style={{ color: "#ffffffff" }}>
+                The architects behind the intelligence.
+            </p>
+        </div>
+
+        <div className="about-carousel">
+            <StackedCarousel testimonials={people} />
+        </div>
+
       </main>
     </>
   );

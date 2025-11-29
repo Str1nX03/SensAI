@@ -7,7 +7,7 @@ function DisplayCard({
   title = "Featured",
   description = "Discover amazing content",
   date = "Just now",
-  variantClass = "" // Replaces the complex Tailwind string
+  variantClass = ""
 }) {
   return (
     <div className={`dc-card ${variantClass} ${className || ''}`}>
@@ -24,15 +24,12 @@ function DisplayCard({
 }
 
 export default function DisplayCards({ cards }) {
-  // If data is passed, map it. Otherwise use defaults.
-  // We attach specific CSS classes (dc-card-1, dc-card-2) to handle positioning.
   
   const cardData = cards && cards.length === 3 ? [
     { ...cards[0], variantClass: "dc-card-1" },
     { ...cards[1], variantClass: "dc-card-2" },
     { ...cards[2], variantClass: "dc-card-3" }
   ] : [
-    // Default fallback if no data provided
     { variantClass: "dc-card-1", title: "Card 1" },
     { variantClass: "dc-card-2", title: "Card 2" },
     { variantClass: "dc-card-3", title: "Card 3" },
