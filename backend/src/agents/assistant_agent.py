@@ -12,7 +12,7 @@ from backend.src.prompts.assistant_prompt import STUDENT_GUIDE_PROMPT, TOPIC_EXP
 
 class AgentState(TypedDict):
 
-    standard: str
+    standard: int
     subject: str
     topic: str
     raw_study_links: list[dict[str, str]]  
@@ -58,7 +58,9 @@ class AssistantAgent:
         return graph.compile()
 
     async def _fetch_materials(self, state: AgentState) -> dict:
+
         try:
+
             logging.info("Async Node: Fetching study materials...")
             
             topic = state["topic"]
@@ -71,7 +73,6 @@ class AssistantAgent:
 
             links = []
             
-            # Robust parsing logic
             results_list = []
             if isinstance(response, list):
                 results_list = response
@@ -80,13 +81,11 @@ class AssistantAgent:
             
             for item in results_list:
                 if isinstance(item, dict):
-                    # Extract specific fields
                     links.append({
                         "url": item.get("url", "No URL"),
                         "title": item.get("title", item.get("content", "Resource")[:50])
                     })
 
-            # Returns the specific List format you wanted
             return {"raw_study_links": links}
 
         except Exception as e:
@@ -190,7 +189,7 @@ class AssistantAgent:
 
             raise CustomException(e, sys)
 
-def run_agent_sync(topic, subject, standard):
+def run_assistant_sync(topic, subject, standard):
 
     agent = AssistantAgent()
     
