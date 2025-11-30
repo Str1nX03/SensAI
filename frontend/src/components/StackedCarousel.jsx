@@ -7,10 +7,10 @@ export default function StackedCarousel({ testimonials }) {
   const [active, setActive] = useState(0);
   const [autoplay, setAutoplay] = useState(true);
 
-  // 1. Calculate count safely first (so hooks can use it)
+  // 1. Calculate count safely first
   const count = testimonials ? testimonials.length : 0;
 
-  // 2. Call useEffect unconditionally (Hooks must always run)
+  // 2. Call useEffect unconditionally
   useEffect(() => {
     if (!autoplay || count === 0) return;
     const interval = setInterval(() => {
@@ -19,7 +19,7 @@ export default function StackedCarousel({ testimonials }) {
     return () => clearInterval(interval);
   }, [autoplay, count]);
 
-  // 3. NOW it is safe to return early if no data exists
+  // 3. return early if no data exists
   if (!testimonials || count === 0) return null;
 
   // 4. Helper functions
@@ -45,19 +45,16 @@ export default function StackedCarousel({ testimonials }) {
   return (
     <div className="stacked-wrapper">
       
-      {/* LEFT: Card Stack */}
       <div className="card-stack animate-card">
         
-        {/* Background Card (Left/Prev) - Blurred Image */}
         <div 
             className="card-layer card-back-left"
-            style={{ backgroundImage: `url(${prevPerson.src})` }}
+            style={{ backgroundImage: `url(${nextPerson.src})` }}
         />
         
-        {/* Background Card (Right/Next) - Blurred Image */}
         <div 
             className="card-layer card-back-right"
-            style={{ backgroundImage: `url(${nextPerson.src})` }}
+            style={{ backgroundImage: `url(${prevPerson.src})` }}
         />
 
         {/* Foreground Card (Active) */}
@@ -73,7 +70,6 @@ export default function StackedCarousel({ testimonials }) {
 
       {/* RIGHT: Content */}
       <div className="content-col">
-        {/* Key changes to force animation reset on change */}
         <div key={active} className="animate-text">
             <h2 className="person-name">{activePerson.name}</h2>
             <p className="person-role">{activePerson.designation}</p>

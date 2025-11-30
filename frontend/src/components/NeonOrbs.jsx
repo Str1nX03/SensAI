@@ -19,8 +19,8 @@ export default function NeonOrbs() {
         width: "100%",
         height: "100vh",
         overflow: "hidden",
-        backgroundColor: "#050a18", // Force dark background here
-        zIndex: 0, // Set to 0 so it's not behind the body
+        backgroundColor: "#050a18",
+        zIndex: 0,
         pointerEvents: "none"
       }}
     >
