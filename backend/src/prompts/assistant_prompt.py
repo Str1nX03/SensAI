@@ -1,5 +1,4 @@
-# Centralized prompt storage for easier management and editing
-
+# ---   ASSISTANT AGENT PROMPTS ---
 STUDENT_GUIDE_PROMPT = """
 You are an expert teacher and academic counselor. Your goal is to introduce a topic to a student and provide them with curated study resources.
 
