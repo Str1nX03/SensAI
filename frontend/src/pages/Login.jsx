@@ -5,6 +5,8 @@ import Navbar from "../components/Navbar";
 import "../styles/navbar.css";
 import { Home, User, FileText, Briefcase } from "lucide-react";
 import ShootingStar from "../components/ShootingStar";
+// 1. IMPORT NAVIGATE HERE
+import { useNavigate } from "react-router-dom";
 
 const NAV_ITEMS = [
   { name:"Home", url:"/", icon:Home },
@@ -15,13 +17,42 @@ const NAV_ITEMS = [
 
 export default function Login(){
     
+    // 2. INITIALIZE NAVIGATE HERE
+    const navigate = useNavigate();
+
     useEffect(()=>{
         initAnimations();
     },[]);
 
-    const handleLogin = (e) => {
+    // 3. REPLACE YOUR OLD handleLogin WITH THIS ONE
+    const handleLogin = async (e) => {
         e.preventDefault(); 
-        console.log("Login clicked - Logic goes here");
+        
+        // Get values directly from the form inputs
+        const username = e.target.username.value;
+        const password = e.target.password.value;
+
+        try {
+            const res = await fetch("http://localhost:5000/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Save token to browser
+                localStorage.setItem("token", data.token);
+                // Redirect to Dashboard
+                navigate("/dashboard");
+            } else {
+                alert(data.message || "Login failed");
+            }
+        } catch (error) {
+            console.error("Login Error:", error);
+            alert("Something went wrong. Is the server running?");
+        }
     };
 
     return(
@@ -61,9 +92,11 @@ export default function Login(){
                                 <label htmlFor="username">Username</label>
                                 <input 
                                     id="username"
+                                    name="username" 
                                     type="text" 
                                     className="form-input" 
                                     placeholder="username" 
+                                    required 
                                 />
                             </div>
 
@@ -71,9 +104,11 @@ export default function Login(){
                                 <label htmlFor="password">Password</label>
                                 <input 
                                     id="password"
+                                    name="password"
                                     type="password" 
                                     className="form-input" 
                                     placeholder="••••••••" 
+                                    required 
                                 />
                             </div>
 

@@ -1,20 +1,146 @@
-.product-layout{
-    display:grid;grid-template-columns:320px 1fr;gap:3rem;margin-top:2rem;
+/* src/styles/product.css */
+
+/* Define the purple quiz color locally */
+:root {
+    --quiz-accent: #a855f7;
+    --quiz-bg: rgba(168, 85, 247, 0.1);
 }
-@media(max-width:900px){.product-layout{grid-template-columns:1fr;}}
 
-.resource-list{
-    display:flex;flex-direction:column;gap:5px;margin-top:10px;
-    background:var(--bg-surface);border:1px solid var(--border-subtle);
-    padding:.5rem;border-radius:var(--radius);
+.product-page {
+    animation: fadeIn 0.5s ease-out;
 }
-.resource-item:hover{transform:translateX(4px);}
 
-.lesson-card{padding:0;margin-bottom:1rem;border:1px solid var(--border-strong);}
-.lesson-header{padding:1.2rem;display:flex;justify-content:space-between;cursor:pointer;}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-.lesson-content{overflow:hidden;padding:1rem;}
-.quiz-section{
-    padding:1.5rem;margin-top:1rem;border-radius:var(--radius);
-    background:var(--bg-surface);border:1px solid var(--border-subtle);
+/* --- LAYOUT OVERRIDES --- */
+/* (Reusing .product-layout from global, but tweaking specifically here) */
+.overview-section {
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+}
+
+/* --- STUDY LINKS --- */
+.study-link-item {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background 0.2s;
+}
+
+.study-link-item:last-child {
+    border-bottom: none;
+}
+
+.study-link-item:hover {
+    background: var(--bg-surface-hover);
+}
+
+.study-link-item a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+/* --- LESSON ACCORDION --- */
+.lessons-section {
+    width: 100%;
+}
+
+.lesson-card {
+    /* Inherits glass-card styles from global, adding specific margin */
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-subtle);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.lesson-card:hover {
+    border-color: var(--border-strong);
+}
+
+/* The clickable header */
+.lesson-header {
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.lesson-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.lesson-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.lesson-number {
+    color: var(--text-secondary);
+    margin-right: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+}
+
+/* The expanding content box */
+.lesson-content {
+    border-top: 1px solid var(--border-subtle);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- QUIZ BOX --- */
+.quiz-box {
+    margin-top: 2rem;
+    background: var(--quiz-bg);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    border-left: 3px solid var(--quiz-accent);
+    padding: 1.5rem;
+    border-radius: var(--radius);
+}
+
+.quiz-title {
+    color: var(--quiz-accent);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.quiz-content {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    white-space: pre-wrap; /* Preserves formatting from AI text */
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+    /* Collapse side-by-side to stack on mobile */
+    .product-layout {
+        grid-template-columns: 1fr !important; 
+    }
+    
+    .overview-section {
+        position: relative;
+        top: 0;
+        margin-bottom: 2rem;
+    }
 }

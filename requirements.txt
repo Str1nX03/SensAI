@@ -1,7 +1,12 @@
 flask
+flask[async]
 langchain
 langgraph
 langchain_groq
 langchain_core
 langchain_tavily
 ipykernel
+python-dotenv
+flask_sqlalchemy
+
+"flask-cors, flask-jwt-extended"

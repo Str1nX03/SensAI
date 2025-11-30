@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { name: "About", url: "/about", icon: Briefcase }
 ];
 
-export default function Landing2() {
+export default function Landing() {
 
   useEffect(() => {
     initAnimations();

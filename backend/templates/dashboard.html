@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Learning Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+    <div class="gradient-bg" aria-hidden="true"></div>
+    <div class="particles" aria-hidden="true"></div>
+    
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <h1 class="welcome-text">Welcome, {{ user }}!</h1>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+        </header>
+        
+        <!-- Main Form -->
+        <main id="main-content" class="dashboard-form">
+            <div class="glass-card">
+                <h2 class="text-center mb-3" id="form-heading">Create Your Learning Journey</h2>
+                <p class="text-center mb-4" style="color: var(--light-grey);">
+                    Tell us what you want to learn, and our AI agents will create a personalized course just for you
+                </p>
+                
+                <form id="course-form" method="POST" action="{{ url_for('product') }}" aria-labelledby="form-heading">
+                    
+                    <!-- Browse Button -->
+                    <div class="text-center mb-3">
+                        <button type="button" id="browse-catalog-btn" class="btn btn-secondary" style="width: 100%; padding: 10px; font-size: 0.9rem; border: 1px dashed var(--electric-blue); background: rgba(41, 121, 255, 0.1);">
+                            📖 Browse Subject & Topic Catalog
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input 
+                            type="text" 
+                            id="subject" 
+                            name="subject" 
+                            class="form-input" 
+                            placeholder="e.g., Physics, Computer Science, History"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="topic" class="form-label">Topic</label>
+                        <input 
+                            type="text" 
+                            id="topic" 
+                            name="topic" 
+                            class="form-input" 
+                            placeholder="e.g., Quantum Physics, Machine Learning"
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="standard" class="form-label">Standard/Grade (Indian System)</label>
+                        <input 
+                            type="number" 
+                            id="standard" 
+                            name="standard" 
+                            class="form-input" 
+                            placeholder="Enter your grade (1-12)"
+                            min="1" 
+                            max="12"
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                        Generate My Course
+                    </button>
+                    
+                    <!-- Old Ideas Button (Kept for compatibility) -->
+                    <button type="button" id="ideas-btn" class="btn btn-secondary" style="width: 100%; margin-top: 1rem; background: transparent; border: 1px solid var(--light-grey); color: var(--light-grey); opacity: 0.7;">
+                        💡 General Inspiration
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Loading State -->
+            <div class="loading-container">
+                <div class="spinner"></div>
+                <h3 class="loading-text">Agents are collaborating...</h3>
+                <p style="color: var(--light-grey); margin-top: 1rem;">
+                    This may take up to 3 mins as our AI agents:
+                </p>
+                <ul style="color: var(--light-grey); text-align: left; max-width: 400px; margin: 1rem auto;">
+                    <li>🔍 Research your topic and gather resources</li>
+                    <li>📝 Plan comprehensive lessons</li>
+                    <li>✍️ Generate detailed content</li>
+                    <li>🧪 Create quizzes and tests</li>
+                </ul>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        
+        <!-- HISTORY SECTION -->
+        {% if courses %}
+        <div class="glass-card mt-4" style="max-width: 800px; margin: 4rem auto 0;">
+            <h3 class="text-center mb-3">Your Learning History</h3>
+            <p class="text-center" style="color: var(--light-grey); margin-bottom: 2rem;">Resume where you left off</p>
+            
+            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                {% for course in courses %}
+                    <div class="catalog-item" style="text-align: left; position: relative; padding-bottom: 3rem;">
+                        <h4 style="color: var(--white); margin-bottom: 0.5rem; font-size: 1.1rem;">{{ course.topic }}</h4>
+                        <p style="font-size: 0.9rem; color: var(--light-grey); margin-bottom: 0;">
+                            {{ course.subject }}
+                        </p>
+                        <span style="font-size: 0.8rem; color: var(--electric-blue);">
+                            Grade {{ course.standard }}
+                        </span>
+                        
+                        <a href="{{ url_for('view_course', course_id=course.id) }}" class="btn btn-secondary" style="position: absolute; bottom: 1rem; right: 1rem; padding: 5px 15px; font-size: 0.8rem;">
+                            Resume ➜
+                        </a>
+                        <div style="position: absolute; bottom: 1rem; right: 1rem; display: flex; gap: 0.5rem;">
+                            <!-- Resume Button -->
+                            <a href="{{ url_for('view_course', course_id=course.id) }}" class="btn btn-secondary" style="padding: 5px 15px; font-size: 0.8rem;">
+                                Resume ➜
+                            </a>
+                            
+                            <!-- Delete Button -->
+                            <form action="{{ url_for('delete_course', course_id=course.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this course? This cannot be undone.');" style="display:inline;">
+                                <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem; background-color: #ff4d4d; border: none; color: white; cursor: pointer; border-radius: 4px;">
+                                    🗑️
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Info Section -->
+        <div class="glass-card mt-4" style="max-width: 800px; margin: 4rem auto 0;">
+            <h3 class="text-center mb-3">What to Expect</h3>
+            <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
+                    <h4 style="color: var(--neon-purple); font-size: 1.1rem;">35-50 Lessons</h4>
+                    <p style="color: var(--light-grey); font-size: 0.9rem;">Comprehensive coverage</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔗</div>
+                    <h4 style="color: var(--electric-blue); font-size: 1.1rem;">Study Resources</h4>
+                    <p style="color: var(--light-grey); font-size: 0.9rem;">Curated materials & videos</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+                    <h4 style="color: var(--neon-purple); font-size: 1.1rem;">Practice Quizzes</h4>
+                    <p style="color: var(--light-grey); font-size: 0.9rem;">Test your knowledge</p>
+                </div>
+            </div>
+        </div>
+        </main>
+    </div>
+    
+    <!-- Original Ideas Modal (Preserved) -->
+    <div id="ideas-modal" class="modal-overlay">
+        <div class="modal-content glass-card">
+            <button class="close-modal" aria-label="Close modal">&times;</button>
+            <h2 style="text-align: center; margin-bottom: 0.5rem;">Explore Learning Possibilities</h2>
+            <div class="topic-grid">
+                <div class="topic-category"><h4>🧪 Science & Math</h4><ul class="topic-list"><li>Quantum Mechanics</li><li>Organic Chemistry</li></ul></div>
+                <div class="topic-category"><h4>💻 Tech</h4><ul class="topic-list"><li>Python</li><li>Machine Learning</li></ul></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW CATALOG MODAL -->
+    <div id="catalog-modal" class="modal-overlay">
+        <div class="modal-content glass-card" style="max-width: 600px;">
+            <button class="close-catalog-modal close-modal" aria-label="Close modal">&times;</button>
+            
+            <!-- Step 1: Subject Selection -->
+            <div id="catalog-step-subject">
+                <h2 style="text-align: center; color: var(--electric-blue);">Select a Subject</h2>
+                <p class="text-center" style="color: var(--light-grey); margin-bottom: 1.5rem;">Choose a domain to explore</p>
+                <div class="catalog-grid" id="subject-list">
+                    <!-- Subjects injected via JS -->
+                </div>
+            </div>
+
+            <!-- Step 2: Topic Selection -->
+            <div id="catalog-step-topic" class="hidden">
+                <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
+                    <button id="catalog-back-btn" class="btn btn-secondary" style="padding: 5px 15px; font-size: 0.8rem; margin-right: 1rem;">← Back</button>
+                    <h2 style="margin: 0; font-size: 1.5rem; color: var(--neon-purple);">Select Topic</h2>
+                </div>
+                <p id="selected-subject-display" style="color: var(--light-grey); margin-bottom: 1rem; border-bottom: 1px solid var(--light-grey); padding-bottom: 0.5rem;">
+                    Subject: <span></span>
+                </p>
+                <div class="catalog-grid" id="topic-list">
+                    <!-- Topics injected via JS -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
