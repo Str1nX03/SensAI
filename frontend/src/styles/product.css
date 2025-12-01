@@ -1,20 +1,161 @@
-.product-layout{
-    display:grid;grid-template-columns:320px 1fr;gap:3rem;margin-top:2rem;
+/* src/styles/product.css */
+
+:root {
+    --quiz-accent: #c084fc; 
+    --quiz-bg: rgba(192, 132, 252, 0.05);
+    
+    --text-main: #e5e5e5;
+    --text-muted: #a3a3a3;
+    
+    --bg-dark: #121212;
+    --bg-card: #18181b;
+    --border-color: #27272a;
 }
-@media(max-width:900px){.product-layout{grid-template-columns:1fr;}}
 
-.resource-list{
-    display:flex;flex-direction:column;gap:5px;margin-top:10px;
-    background:var(--bg-surface);border:1px solid var(--border-subtle);
-    padding:.5rem;border-radius:var(--radius);
+.product-page {
+    animation: fadeIn 0.5s ease-out;
 }
-.resource-item:hover{transform:translateX(4px);}
 
-.lesson-card{padding:0;margin-bottom:1rem;border:1px solid var(--border-strong);}
-.lesson-header{padding:1.2rem;display:flex;justify-content:space-between;cursor:pointer;}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-.lesson-content{overflow:hidden;padding:1rem;}
-.quiz-section{
-    padding:1.5rem;margin-top:1rem;border-radius:var(--radius);
-    background:var(--bg-surface);border:1px solid var(--border-subtle);
+/* --- OVERVIEW & RESOURCES --- */
+.overview-section {
+    position: sticky;
+    top: 40px;
+    height: fit-content;
+}
+
+a.study-link-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+a.study-link-item:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* --- LESSON CARD --- */
+.lessons-section { width: 100%; }
+
+.lesson-card {
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.lesson-card:hover {
+    border-color: #404040;
+}
+
+.lesson-header {
+    padding: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: transparent;
+}
+
+.lesson-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.lesson-number {
+    color: #52525b;
+    margin-right: 1rem;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.lesson-content {
+    border-top: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+}
+
+/* --- QUIZ BOX --- */
+.quiz-box {
+    margin-top: 2rem;
+    background: var(--quiz-bg);
+    border: 1px solid rgba(192, 132, 252, 0.1);
+    border-left: 3px solid var(--quiz-accent);
+    padding: 1.5rem;
+    border-radius: 6px;
+}
+
+.quiz-title {
+    color: var(--quiz-accent);
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+/* --- HTML CONTENT STYLING --- */
+.html-content {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #d4d4d4; /* Light gray, not harsh white */
+}
+
+.html-content h3, 
+.html-content h4 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.html-content p {
+    margin-bottom: 1.25rem;
+    color: #a3a3a3;
+}
+
+.html-content ul, 
+.html-content ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+    color: #a3a3a3;
+}
+
+.html-content li {
+    margin-bottom: 0.5rem;
+}
+
+.html-content b, 
+.html-content strong {
+    color: var(--quiz-accent);
+    font-weight: 600;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) {
+    .product-layout { grid-template-columns: 1fr !important; }
+}
+
+/* --- UTILS --- */
+.simple-text, .simple-text p {
+    color: #a3a3a3 !important;
 }
