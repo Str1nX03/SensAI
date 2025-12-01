@@ -8,5 +8,5 @@ langchain_tavily
 ipykernel
 python-dotenv
 flask_sqlalchemy
-
-"flask-cors, flask-jwt-extended"
+flask-cors
+flask-jwt-extended
