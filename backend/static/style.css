@@ -632,26 +632,29 @@ p {
     animation: slideInRight 0.6s ease-out;
 }
 
-.study-link {
-    display: inline-block;
-    margin: 0.5rem 0.5rem 0.5rem 0;
-    padding: 8px 16px;
-    background: rgba(41, 121, 255, 0.2);
-    border: 1px solid var(--electric-blue);
-    border-radius: 20px;
-    color: var(--electric-blue);
-    text-decoration: none;
+/* ... existing styles ... */
+
+/* --- STUDY LINKS STYLING --- */
+.study-link-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
     font-size: 0.9rem;
-    transition: all 0.3s ease-out;
+    color: #9ca3af; /* Soft Grey - Easier on eyes */
+    text-decoration: none;
+    padding: 0.5rem 0;
+    transition: color 0.2s ease;
+    border-bottom: 1px solid #222; /* Subtle separator */
 }
 
-.study-link:hover {
-    background: var(--electric-blue);
-    color: var(--white);
-    transform: scale(1.05) rotate(1deg);
-    box-shadow: 0 4px 12px rgba(41, 121, 255, 0.4);
+.study-link-item:last-child {
+    border-bottom: none;
 }
 
+.study-link-item:hover {
+    color: #ffffff; /* Brightens to white on hover */
+    background: transparent; /* Removes any background hover effects */
+}
 /* Accordion Lessons */
 .lesson-card {
     background: rgba(28, 28, 30, 0.6);

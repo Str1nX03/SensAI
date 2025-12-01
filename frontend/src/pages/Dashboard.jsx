@@ -1,173 +1,262 @@
-import React, { useEffect, useState } from "react";
+/* src/pages/Dashboard.jsx */
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import { Home, User, LogOut, BookOpen, Plus } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { 
+    LayoutGrid, LogOut, PlusCircle, BookOpen, Activity, Cpu, Clock, Sparkles, Loader2, CheckCircle, ArrowRight
+} from "lucide-react";
+import DatabaseWithRestApi from "../components/DatabaseWithRestApi"; 
 import "../styles/dashboard.css";
 
-const NAV_ITEMS = [
-  { name: "Home", url: "/", icon: Home },
-  { name: "Logout", url: "/login", icon: LogOut }
+const MOCK_USAGE_LOGS = [
+    { id: 1, agent: "Curriculum Architect", action: "Generated Syllabus", tokens: 450, time: "2 mins ago", status: "success" },
+    { id: 2, agent: "Quiz Generator", action: "Created Unit Test", tokens: 120, time: "15 mins ago", status: "success" },
+    { id: 3, agent: "Resource Scraper", action: "Fetched PDF Links", tokens: 890, time: "1 hour ago", status: "warning" },
 ];
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const [courses, setCourses] = useState([]);
-  
-  const [loading, setLoading] = useState(false); 
-  
-  const [form, setForm] = useState({
-    subject: "",
-    topic: "",
-    standard: ""
-  });
+    const navigate = useNavigate();
+    const location = useLocation(); 
+    
+    const [activeTab, setActiveTab] = useState(location.state?.activeTab || "courses"); 
+    const [courses, setCourses] = useState([]);
 
-  // 1. Fetch Courses on Load
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if(!token) navigate("/login");
+    // GLOBAL GENERATION STATE
+    const [generationStatus, setGenerationStatus] = useState("idle"); 
+    const [progress, setProgress] = useState(0);
+    const [generatedCourseId, setGeneratedCourseId] = useState(null);
+    const progressInterval = useRef(null);
 
-    axios.get("http://localhost:5000/api/courses", {
-        headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => {
-        if (res.data.courses) setCourses(res.data.courses);
-    })
-    .catch(err => console.error(err));
-  }, [navigate]);
+    const [form, setForm] = useState({ subject: "", topic: "", standard: "" });
 
-  const updateForm = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+    useEffect(() => {
+        if (location.state?.activeTab) {
+            window.history.replaceState({}, document.title);
+        }
+    }, []);
 
-  // 2. The Agent Trigger
-  const generateCourse = async (e) => {
-    e.preventDefault();
-    if(!form.topic || !form.subject || !form.standard) return alert("Please fill all fields");
+    // Fetch Courses
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+             navigate("/login"); 
+             return;
+        }
 
-    setLoading(true);
+        axios.get("http://localhost:5000/api/courses", {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => { if (res.data.courses) setCourses(res.data.courses); })
+        .catch(err => console.error(err));
+    }, [navigate]);
 
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/api/generate", form, {
-          headers: { Authorization: `Bearer ${token}` }
-      });
+    // Cleanup interval
+    useEffect(() => { return () => clearInterval(progressInterval.current); }, []);
 
-      if (res.data.success){
-        setLoading(false);
-        navigate(`/product/${res.data.course_id}`);
-      }
-    } catch (err){
-      setLoading(false);
-      alert("Agent failed to generate course. Check console.");
-      console.log(err);
-    }
-  };
+    const updateForm = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  return (
-    <>
-      <Navbar items={NAV_ITEMS} />
+    // GENERATE LOGIC
+    const generateCourse = async (e) => {
+        e.preventDefault();
+        if (!form.topic || !form.subject || !form.standard) return alert("Please fill all fields");
 
-      <main id="main-content" className="dashboard-page">
+        setGenerationStatus("running");
+        setProgress(0);
         
-        <div className="welcome-section" style={{ marginBottom: "2rem" }}>
-            <h1>Dashboard</h1>
-            <p>Manage your learning agents and active sessions.</p>
-        </div>
+        // Progress Simulation
+        progressInterval.current = setInterval(() => {
+            setProgress((old) => {
+                if (old >= 90) return 90;
+                return old + (old < 50 ? 5 : 2);
+            });
+        }, 800);
 
-        <div className="dashboard-layout">
-            
-            <div className="glass-card">
-                <h2>Initialize Course</h2>
-                <p style={{ fontSize: "0.9rem", marginBottom: "1.5rem" }}>Configure AI parameters for a new study session.</p>
+        try {
+            const token = localStorage.getItem("token");
+            const res = await axios.post("http://localhost:5000/api/generate", form, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-                {!loading ? (
-                    <form onSubmit={generateCourse}>
-                        <div className="form-group">
-                            <label className="form-label">Subject</label>
-                            <input 
-                                name="subject" 
-                                className="form-input" 
-                                placeholder="e.g. Physics" 
-                                onChange={updateForm} 
-                                required
-                            />
-                        </div>
+            if (res.data.success) {
+                clearInterval(progressInterval.current);
+                setProgress(100);
+                setGeneratedCourseId(res.data.course_id);
+                setGenerationStatus("completed");
+            }
+        } catch (error) {
+            clearInterval(progressInterval.current);
+            setGenerationStatus("idle");
+            alert("Agent connection failed.");
+            console.error(error);
+        }
+    };
 
-                        <div className="form-group">
-                            <label className="form-label">Topic</label>
-                            <input 
-                                name="topic" 
-                                className="form-input" 
-                                placeholder="e.g. Thermodynamics" 
-                                onChange={updateForm} 
-                                required
-                            />
-                        </div>
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        navigate("/login");
+    };
 
-                        <div className="form-group">
-                            <label className="form-label">Grade Level</label>
-                            <input 
-                                name="standard" 
-                                type="number" 
-                                className="form-input" 
-                                placeholder="1-12" 
-                                min="1" max="12"
-                                onChange={updateForm} 
-                                required
-                            />
-                        </div>
+    const handleToastClick = () => {
+        if (generationStatus === "completed" && generatedCourseId) {
+            navigate(`/product/${generatedCourseId}`);
+            setGenerationStatus("idle");
+            setForm({ subject: "", topic: "", standard: "" });
+        } else {
+            setActiveTab("generate");
+        }
+    };
 
-                        <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: "1rem" }}>
-                            Generate Course
-                        </button>
-                    </form>
-                ) : (
-                    /* --- THIS SHOWS WHEN AGENT IS WORKING --- */
-                    <div className="loading-container active" style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "2rem" }}>
-                        <div className="spinner" style={{ marginBottom: "1rem" }}></div>
-                        <span style={{ fontFamily: "monospace", fontSize: "0.85rem", color: "#03ae00" }}>
-                            AGENTS COLLABORATING...
-                        </span>
-                        <p style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.5rem" }}>
-                            Generating Lessons & Quizzes
-                        </p>
-                    </div>
-                )}
-            </div>
-
-            <div>
-                <h2 style={{ fontSize: "1.5rem", borderBottom: "1px solid #333", paddingBottom: "1rem", marginBottom: "1.5rem" }}>
-                    Active Courses
-                </h2>
-
-                {courses.length > 0 ? (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "1rem" }}>
-                        {courses.map(course => (
-                            <div key={course.id} className="glass-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                                <div>
-                                    <h4 style={{ marginBottom: "0.5rem", fontSize: "1.1rem" }}>{course.topic}</h4>
-                                    <p style={{ fontSize: "0.85rem", marginBottom: "1.5rem", color: "#888" }}>
-                                        {course.subject} • Grade {course.standard}
-                                    </p>
-                                </div>
-                                <button 
-                                    onClick={() => navigate(`/product/${course.id}`)} 
-                                    className="btn btn-secondary"
-                                    style={{ width: "100%" }}
-                                >
-                                    Resume Session
-                                </button>
+    return (
+        <div className="app-container">
+            {/* --- SMART TOAST --- */}
+            {generationStatus !== "idle" && (
+                <div 
+                    className="floating-status" 
+                    onClick={handleToastClick}
+                    style={{ 
+                        borderColor: generationStatus === "completed" ? "#03ae00" : "#333",
+                        opacity: generationStatus === "completed" ? 1 : 0.6 
+                    }}
+                >
+                    {generationStatus === "running" ? (
+                        <>
+                            <div className="status-dot"></div>
+                            <div>
+                                <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#fff", display:"block" }}>Agents Active</span>
+                                <span style={{ fontSize: "0.75rem", color: "#888" }}>Building "{form.topic}" ({progress}%)</span>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="glass-card" style={{ textAlign: "center", borderStyle: "dashed", padding: "3rem" }}>
-                        <p style={{ margin: 0, color: "#666" }}>No active courses found. Initialize one on the left.</p>
+                        </>
+                    ) : (
+                        <>
+                            <div style={{ color: "#03ae00", display:"flex", alignItems:"center" }}><CheckCircle size={18} /></div>
+                            <div>
+                                <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#fff", display:"block" }}>Course Ready!</span>
+                                <span style={{ fontSize: "0.75rem", color: "#03ae00", fontWeight:"bold" }}>Click to Open <ArrowRight size={10} style={{display:"inline"}}/></span>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* --- SIDEBAR --- */}
+            <aside className="sidebar">
+                <div className="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Student&background=333&color=fff" alt="Profile" className="avatar" />
+                    <div className="user-info"><h3>Student</h3><p>Pro Plan</p></div>
+                </div>
+
+                <nav className="nav-menu">
+                    <button className={`nav-item ${activeTab === 'usage' ? 'active' : ''}`} onClick={() => setActiveTab('usage')}>
+                        <Activity size={20} /> Usage Logs
+                    </button>
+                    <div style={{ height: "1px", background: "#222", margin: "0.5rem 0" }}></div>
+                    
+                    <button 
+                        className={`nav-item ${activeTab === 'generate' ? 'active' : ''}`} 
+                        onClick={() => setActiveTab('generate')} 
+                        style={{ color: activeTab === 'generate' ? "#fff" : "#ccc" }}
+                    >
+                        {generationStatus === "running" ? <Loader2 size={20} className="animate-spin" /> : <PlusCircle size={20} />}
+                        Generate Course
+                    </button>
+
+                    <button className={`nav-item ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => setActiveTab('courses')}>
+                        <LayoutGrid size={20} /> Active Courses
+                    </button>
+                    <div style={{ flexGrow: 1 }}></div>
+                    <button className="nav-item" onClick={handleLogout}><LogOut size={20} /> Logout</button>
+                </nav>
+            </aside>
+
+            {/* --- MAIN CONTENT --- */}
+            <main className="main-content-area">
+                
+                {activeTab === 'usage' && (
+                    <div className="fade-in">
+                        <header className="dashboard-header"><div><h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>Agent Activity</h1></div></header>
+                        <div style={{ display: "grid", gap: "1rem" }}>
+                            {MOCK_USAGE_LOGS.map((log) => (
+                                <div key={log.id} style={{ display: "grid", gridTemplateColumns: "50px 2fr 2fr 1fr 1fr", alignItems: "center", background: "#0a0a0a", border: "1px solid #222", padding: "1.5rem", borderRadius: "12px" }}>
+                                    <div style={{ color: "#666" }}><Cpu size={20} /></div>
+                                    <div><h4 style={{ margin: 0, fontSize: "1rem" }}>{log.agent}</h4><span style={{ fontSize: "0.8rem", color: "#666" }}>ID: 00{log.id}</span></div>
+                                    <div style={{ fontSize: "0.95rem", color: "#ccc" }}>{log.action}</div>
+                                    <div style={{ fontSize: "0.9rem", color: "#888", display:"flex", alignItems:"center", gap:"6px" }}><Clock size={14} /> {log.time}</div>
+                                    <div style={{ textAlign: "right", fontFamily: "monospace", color: log.status === 'success' ? "#03ae00" : "#eab308" }}>{log.tokens} TKN</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
-            </div>
 
+                {activeTab === 'generate' && (
+                    <div className="fade-in" style={{ maxWidth: "800px", margin: "0 auto" }}>
+                        {generationStatus === "idle" && (
+                            <>
+                                <header className="dashboard-header" style={{ justifyContent: "center", textAlign: "center", border: "none" }}>
+                                    <div>
+                                        <div style={{ display:"inline-flex", padding:"12px", background:"#1a1a1a", borderRadius:"12px", marginBottom:"1rem", color:"#fff" }}><Sparkles size={28} /></div>
+                                        <h1 style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>Orchestrate New Course</h1>
+                                        <p style={{ fontSize: "1.1rem", color: "#888" }}>Define parameters for your personal AI swarm.</p>
+                                    </div>
+                                </header>
+                                <div className="glass-card" style={{ padding: "3rem", background: "#0a0a0a", border: "1px solid #333" }}>
+                                    <form onSubmit={generateCourse}>
+                                        <div className="form-group"><label className="form-label">Subject</label><input name="subject" className="form-input" placeholder="e.g. Computer Science" onChange={updateForm} value={form.subject} autoFocus required /></div>
+                                        <div className="form-group"><label className="form-label">Specific Topic</label><input name="topic" className="form-input" placeholder="e.g. Neural Networks" onChange={updateForm} value={form.topic} required /></div>
+                                        <div className="form-group"><label className="form-label">Grade / Proficiency</label><input name="standard" type="number" className="form-input" placeholder="1 - 12" onChange={updateForm} value={form.standard} required /></div>
+                                        <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: "2rem", height: "55px", background: "#fff", color: "#000", fontWeight: "bold" }}>Initialize Agents & Build Course</button>
+                                    </form>
+                                </div>
+                            </>
+                        )}
+
+                        {generationStatus === "running" && (
+                            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", paddingTop: "2rem" }}>
+                                <div style={{ transform: "scale(1)" }}>
+                                    <DatabaseWithRestApi title="FLASK BACKEND" circleText="AI" badgeTexts={{ first: "INIT", second: "THINK", third: "GENERATE", fourth: "SEND" }} buttonTexts={{ first: "Flask", second: "Python" }} lightColor="#03ae00" />
+                                </div>
+                                <h2 style={{ marginTop: "0rem", color: "#fff" }}>Constructing Curriculum...</h2>
+                                <p style={{ color: "#666", marginBottom: "1rem" }}>Agents are researching {form.topic}...</p>
+                                <div style={{ width: "400px", maxWidth: "100%" }}>
+                                    <div className="progress-container"><div className="progress-fill" style={{ width: `${progress}%` }}></div></div>
+                                </div>
+                            </div>
+                        )}
+
+                        {generationStatus === "completed" && (
+                             <div style={{ textAlign: "center", paddingTop: "5rem" }}>
+                                <div style={{ display: "inline-flex", padding: "1.5rem", borderRadius: "50%", background: "rgba(3, 174, 0, 0.1)", color: "#03ae00", marginBottom: "1.5rem" }}><CheckCircle size={48} /></div>
+                                <h2 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>Course Ready!</h2>
+                                <p style={{ color: "#888", marginBottom: "2rem" }}>Your personalized course on <b>{form.topic}</b> has been generated.</p>
+                                <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                                    <button className="btn btn-primary" onClick={() => { navigate(`/product/${generatedCourseId}`); setGenerationStatus("idle"); setForm({ subject: "", topic: "", standard: "" }); }} style={{ background: "#fff", color: "#000", fontWeight: "bold", padding: "0 2rem" }}>Start Learning Now</button>
+                                    <button className="btn btn-secondary" onClick={() => { setGenerationStatus("idle"); setForm({ subject: "", topic: "", standard: "" }); }}>Create Another</button>
+                                </div>
+                             </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'courses' && (
+                    <div className="fade-in">
+                        <header className="dashboard-header"><div><h1 style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>Active Courses</h1></div></header>
+                        <div className="bento-grid">
+                            <div className="bento-card create-card" onClick={() => setActiveTab('generate')}>
+                                <div style={{background: "#1a1a1a", padding:"1rem", borderRadius:"50%"}}><PlusCircle size={24} /></div><span style={{fontWeight: 500}}>Create New Course</span>
+                            </div>
+                            {courses.map(course => (
+                                <div key={course.id} className="bento-card" onClick={() => navigate(`/product/${course.id}`)}>
+                                    <div className="card-top">
+                                        <div style={{display:"flex", alignItems:"center", gap:"8px", marginBottom:"1rem", color:"#666", fontSize:"0.8rem"}}><BookOpen size={14} />{course.subject}</div>
+                                        <h4>{course.topic}</h4>
+                                    </div>
+                                    <span className="card-badge">Grade {course.standard}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </main>
         </div>
-      </main>
-    </>
-  );
+    );
 }

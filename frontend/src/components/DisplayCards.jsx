@@ -5,25 +5,32 @@ function DisplayCard({
   className,
   icon = <Sparkles size={16} />,
   title = "Featured",
-  description = "Discover amazing content",
+  description = "Content",
   date = "Just now",
-  variantClass = ""
+  variantClass = "",
+  isActive = false,
+  onHover
 }) {
   return (
-    <div className={`dc-card ${variantClass} ${className || ''}`}>
+    <div 
+      className={`dc-card ${variantClass} ${className || ''} ${isActive ? 'active' : ''}`}
+      onMouseEnter={onHover}
+    >
       <div className="dc-header">
         <span className="dc-icon-box">
           {icon}
         </span>
         <p className="dc-title">{title}</p>
       </div>
-      <p className="dc-desc">{description}</p>
+      <p className="dc-desc">
+        {description}
+      </p>
       <p className="dc-date">{date}</p>
     </div>
   );
 }
 
-export default function DisplayCards({ cards }) {
+export default function DisplayCards({ cards, activeIndex, onCardHover }) {
   
   const cardData = cards && cards.length === 3 ? [
     { ...cards[0], variantClass: "dc-card-1" },
@@ -38,7 +45,12 @@ export default function DisplayCards({ cards }) {
   return (
     <div className="dc-grid">
       {cardData.map((card, index) => (
-        <DisplayCard key={index} {...card} />
+        <DisplayCard 
+          key={index} 
+          {...card} 
+          isActive={index === activeIndex}
+          onHover={() => onCardHover && onCardHover(index)}
+        />
       ))}
     </div>
   );

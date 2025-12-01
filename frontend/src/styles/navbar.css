@@ -4,7 +4,7 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 60;
-  width: max-content; /* Ensures it doesn't stretch */
+  width: max-content;
 }
 
 /* Navbar Container */
@@ -12,7 +12,7 @@
   display: flex;
   gap: 0.5rem;
   padding: 0.4rem 0.5rem;
-  background: rgba(0, 0, 0, 0.4); /* Darkened slightly for better contrast */
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 999px;
   border: 1px solid var(--border-subtle);
   backdrop-filter: blur(16px);

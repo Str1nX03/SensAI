@@ -1,9 +1,15 @@
 /* src/styles/product.css */
 
-/* Define the purple quiz color locally */
 :root {
-    --quiz-accent: #a855f7;
-    --quiz-bg: rgba(168, 85, 247, 0.1);
+    --quiz-accent: #c084fc; 
+    --quiz-bg: rgba(192, 132, 252, 0.05);
+    
+    --text-main: #e5e5e5;
+    --text-muted: #a3a3a3;
+    
+    --bg-dark: #121212;
+    --bg-card: #18181b;
+    --border-color: #27272a;
 }
 
 .product-page {
@@ -15,132 +21,141 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- LAYOUT OVERRIDES --- */
-/* (Reusing .product-layout from global, but tweaking specifically here) */
+/* --- OVERVIEW & RESOURCES --- */
 .overview-section {
     position: sticky;
-    top: 100px;
+    top: 40px;
     height: fit-content;
 }
 
-/* --- STUDY LINKS --- */
-.study-link-item {
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--border-subtle);
-    transition: background 0.2s;
-}
-
-.study-link-item:last-child {
-    border-bottom: none;
-}
-
-.study-link-item:hover {
-    background: var(--bg-surface-hover);
-}
-
-.study-link-item a {
+a.study-link-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     font-size: 0.9rem;
-    color: var(--text-primary);
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
-/* --- LESSON ACCORDION --- */
-.lessons-section {
-    width: 100%;
+a.study-link-item:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.03);
 }
+
+/* --- LESSON CARD --- */
+.lessons-section { width: 100%; }
 
 .lesson-card {
-    /* Inherits glass-card styles from global, adding specific margin */
     margin-bottom: 1rem;
-    border: 1px solid var(--border-subtle);
-    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
 }
 
 .lesson-card:hover {
-    border-color: var(--border-strong);
+    border-color: #404040;
 }
 
-/* The clickable header */
 .lesson-header {
     padding: 1.5rem;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    user-select: none;
-    transition: background 0.2s;
-}
-
-.lesson-header:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: transparent;
 }
 
 .lesson-header h3 {
     margin: 0;
     font-size: 1.1rem;
     font-weight: 500;
+    color: var(--text-main);
 }
 
 .lesson-number {
-    color: var(--text-secondary);
-    margin-right: 0.75rem;
-    font-family: var(--font-mono);
+    color: #52525b;
+    margin-right: 1rem;
+    font-family: monospace;
     font-size: 0.9rem;
 }
 
-/* The expanding content box */
 .lesson-content {
-    border-top: 1px solid var(--border-subtle);
-    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.15);
     padding: 2rem;
-    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
 }
 
 /* --- QUIZ BOX --- */
 .quiz-box {
     margin-top: 2rem;
     background: var(--quiz-bg);
-    border: 1px solid rgba(168, 85, 247, 0.2);
+    border: 1px solid rgba(192, 132, 252, 0.1);
     border-left: 3px solid var(--quiz-accent);
     padding: 1.5rem;
-    border-radius: var(--radius);
+    border-radius: 6px;
 }
 
 .quiz-title {
     color: var(--quiz-accent);
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-weight: 600;
 }
 
-.quiz-content {
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    white-space: pre-wrap; /* Preserves formatting from AI text */
+/* --- HTML CONTENT STYLING --- */
+.html-content {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #d4d4d4; /* Light gray, not harsh white */
+}
+
+.html-content h3, 
+.html-content h4 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.html-content p {
+    margin-bottom: 1.25rem;
+    color: #a3a3a3;
+}
+
+.html-content ul, 
+.html-content ol {
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+    color: #a3a3a3;
+}
+
+.html-content li {
+    margin-bottom: 0.5rem;
+}
+
+.html-content b, 
+.html-content strong {
+    color: var(--quiz-accent);
+    font-weight: 600;
 }
 
 /* --- RESPONSIVE --- */
 @media (max-width: 900px) {
-    /* Collapse side-by-side to stack on mobile */
-    .product-layout {
-        grid-template-columns: 1fr !important; 
-    }
-    
-    .overview-section {
-        position: relative;
-        top: 0;
-        margin-bottom: 2rem;
-    }
+    .product-layout { grid-template-columns: 1fr !important; }
+}
+
+/* --- UTILS --- */
+.simple-text, .simple-text p {
+    color: #a3a3a3 !important;
 }

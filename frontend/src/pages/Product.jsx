@@ -1,144 +1,207 @@
+/* src/pages/Product.jsx */
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Navbar from "../components/Navbar";
-import { Home, ArrowLeft, ChevronDown, ChevronUp, Link as LinkIcon } from "lucide-react";
-import "../styles/product.css"; 
-
-const NAV_ITEMS = [
-  { name: "Dashboard", url: "/dashboard", icon: Home },
-];
+import { ArrowLeft, BookOpen, ChevronDown, ChevronUp, ExternalLink, PlusCircle, LayoutGrid } from "lucide-react";
+import "../styles/product.css";
 
 export default function Product() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  
-  const [course, setCourse] = useState(null);
-  const [loading, setLoading] = useState(true);
-  
-  // UI Toggles
-  const [showResources, setShowResources] = useState(false);
-  const [expandedLessons, setExpandedLessons] = useState({});
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    axios.get(`http://localhost:5000/api/course/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-    .then(res => {
-      setCourse(res.data);
-      setLoading(false);
-    })
-    .catch(() => navigate("/dashboard"));
-  }, [id, navigate]);
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-  const toggleLesson = (title) => {
-    setExpandedLessons(prev => ({ ...prev, [title]: !prev[title] }));
-  };
+    const [course, setCourse] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [expandedLessons, setExpandedLessons] = useState({});
 
-  if (loading) return <div style={{padding:"5rem", textAlign:"center"}}>Loading Course Data...</div>;
+    // Fetch Course
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
 
-  return (
-    <>
-      <Navbar items={NAV_ITEMS} />
+        axios.get(`http://localhost:5000/api/course/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        })
+        .then(res => {
+            const data = res.data.course || res.data;
+            setCourse(data);
+            setLoading(false);
+        })
+        .catch(err => {
+            console.error("Error fetching course:", err);
+            setLoading(false);
+        });
+    }, [id, navigate]);
 
-      <main id="main-content" style={{ padding: "3rem 4rem", maxWidth: "1600px", margin: "0 auto" }}>
-        
-        {/* HEADER */}
-        <header className="product-header" style={{ borderBottom: "1px solid #333", paddingBottom: "1rem", marginBottom: "2rem" }}>
-            <h1 style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{course.topic}</h1>
-            <p style={{ color: "#888", fontFamily: "monospace" }}>
-                SUBJECT: {course.subject} // GRADE: {course.standard}
-            </p>
-        </header>
+    const toggleLesson = (title) => {
+        setExpandedLessons(prev => ({ ...prev, [title]: !prev[title] }));
+    };
 
-        <div className="product-layout" style={{ display: "grid", gridTemplateColumns: "350px 1fr", gap: "4rem" }}>
-            
-            {/* LEFT COLUMN: Overview & Resources */}
-            <div className="overview-section">
+    const formatLessonNumber = (n) => n.toString().padStart(2, "0");
+
+    const getLessonNumber = (title) => {
+        const match = title.match(/Lesson\s+(\d+)/i) || title.match(/(\d+)/);
+        return match ? parseInt(match[1], 10) : 999;
+    };
+
+    if (loading) return <div className="p-5 text-center" style={{color:"#fff"}}>Loading Content...</div>;
+    if (!course) return <div className="p-5 text-center" style={{color:"#fff"}}>Course data unavailable.</div>;
+
+    const safeIntro = course.intro 
+        ? course.intro.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ') 
+        : "";
+
+    // Sort lesson keys
+    const lessonKeys = course.lessons 
+        ? Object.keys(course.lessons).sort((a, b) => getLessonNumber(a) - getLessonNumber(b)) 
+        : [];
+
+    return (
+        <div style={{ background: "#0d0d0d", minHeight: "100vh", color: "#fff" }}>
+            <style>{`
+                .study-link-item {
+                    color: #888;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    text-decoration: none;
+                    margin-bottom: 8px;
+                    transition: color 0.2s ease;
+                    font-size: 0.9rem;
+                }
+                .study-link-item:hover {
+                    color: #fff;
+                }
+            `}</style>
+
+            {/* NAV */}
+            <nav style={{ padding: "1.5rem 3rem", borderBottom: "1px solid #333", display: "flex", alignItems: "center" }}>
+                <button 
+                    onClick={() => navigate("/dashboard")} 
+                    style={{ background:"none", border:"none", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", gap:"10px" }}
+                >
+                    <ArrowLeft size={20}/> Back to Dashboard
+                </button>
+            </nav>
+
+            <main className="product-page" style={{ maxWidth:"1200px", margin:"0 auto", padding:"3rem 2rem" }}>
                 
-                {/* Overview Card */}
-                <div className="glass-card mb-3" style={{ marginBottom: "1.5rem" }}>
-                    <h3>Overview</h3>
-                    <div style={{ fontSize: "0.95rem", lineHeight: "1.6", color: "#ccc" }}>
-                        {course.intro}
+                {/* HEADER */}
+                <header style={{ textAlign:"center", marginBottom:"4rem" }}>
+                    <h1 style={{ fontSize:"3rem", fontWeight:"700", marginBottom:"1rem", background:"linear-gradient(to right, #fff, #888)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+                        {course.topic}
+                    </h1>
+                    <div style={{ fontFamily:"monospace", display:"inline-flex", gap:"1rem", color:"#888" }}>
+                        <span>{course.subject?.toUpperCase() || "SUBJECT"}</span>
+                        <span>//</span>
+                        <span>GRADE {course.standard || "N/A"}</span>
                     </div>
-                </div>
+                </header>
 
-                {/* Resources Card */}
-                <div className="glass-card">
-                    <h3>Resources</h3>
-                    <p style={{ fontSize: "0.85rem", marginBottom: "1rem", color: "#888" }}>Curated materials for you.</p>
+                <div className="product-layout" style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:"3rem" }}>
+                    
+                    {/* --- LEFT SIDEBAR (Overview & Resources Merged) --- */}
+                    <div className="overview-section">
+                        <div className="glass-card" style={{ background:"#1a1a1a", border:"1px solid #333", padding:"1.5rem", borderRadius:"12px" }}>
+                            
+                            {/* Overview Part */}
+                            <h3 style={{ fontSize:"1.1rem", marginBottom:"1rem", color:"#fff" }}>Overview</h3>
+                            <div className="html-content simple-text" dangerouslySetInnerHTML={{ __html: safeIntro }} />
 
-                    <div className="resource-dropdown">
-                        <button 
-                            className="btn btn-secondary" 
-                            style={{ width: "100%", justifyContent: "space-between", display: "flex" }}
-                            onClick={() => setShowResources(!showResources)}
-                        >
-                            <span>📚 View Materials</span>
-                            <span>{showResources ? "▲" : "▼"}</span>
-                        </button>
+                            {course.links && course.links.length > 0 && (
+                                <div style={{ marginTop: "2rem", paddingTop: "1.5rem", borderTop: "1px solid #333" }}>
+                                    <h3 style={{ fontSize:"1.1rem", marginBottom:"1rem", color:"#fff" }}>Resources</h3>
+                                    <div style={{ display:"flex", flexDirection:"column" }}>
+                                        {course.links.map((rawLink, i) => {
+                                            let linkStr = "";
+                                            if (typeof rawLink === "string") linkStr = rawLink;
+                                            else if (typeof rawLink === "object" && rawLink !== null) linkStr = rawLink.url || rawLink.link || "";
+                                            
+                                            if (!linkStr) return null;
 
-                        {showResources && course.links && (
-                            <div className="resource-list" style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                                {course.links.map((link, i) => (
-                                    <a key={i} href={link} target="_blank" rel="noreferrer" className="resource-item" style={{ 
-                                        padding: "0.75rem", background: "#111", borderRadius: "4px", fontSize: "0.85rem", color: "#4facfe", textDecoration:"none"
-                                    }}>
-                                        🔗 {link.substring(0, 30)}...
-                                    </a>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+                                            let displayUrl = linkStr;
+                                            let hostname = "External Resource";
+                                            
+                                            try {
+                                                if (!linkStr.startsWith("http")) linkStr = "https://" + linkStr;
+                                                const u = new URL(linkStr);
+                                                displayUrl = u.href;
+                                                hostname = u.hostname.replace("www.", "");
+                                            } catch {
+                                                hostname = "Resource " + (i + 1);
+                                            }
 
-            {/* RIGHT COLUMN: Lessons & Quizzes */}
-            <div className="lessons-section">
-                <h2 className="mb-3">Learning Path</h2>
-
-                {course.lessons ? Object.keys(course.lessons).map((title, index) => (
-                    <div key={index} className="lesson-card" style={{ marginBottom: "1rem", border: "1px solid #333", borderRadius: "6px", overflow: "hidden" }}>
-                        
-                        {/* HEADER */}
-                        <div 
-                            onClick={() => toggleLesson(title)}
-                            className="lesson-header" 
-                            style={{ padding: "1.25rem", display: "flex", justifyContent: "space-between", cursor: "pointer", background: "#0a0a0a" }}
-                        >
-                            <span>{title}</span>
-                            <span>{expandedLessons[title] ? "▲" : "▼"}</span>
-                        </div>
-
-                        {/* CONTENT */}
-                        {expandedLessons[title] && (
-                            <div className="lesson-content" style={{ padding: "1.5rem", borderTop: "1px solid #333", background: "rgba(0,0,0,0.2)" }}>
-                                
-                                <div style={{ lineHeight: "1.7", marginBottom: "2rem", color: "#ddd", whiteSpace: "pre-wrap" }}>
-                                    {course.lessons[title]}
+                                            return (
+                                                <a 
+                                                    key={i} 
+                                                    href={displayUrl} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer" 
+                                                    className="study-link-item"
+                                                >
+                                                    <ExternalLink size={14}/>
+                                                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hostname}</span>
+                                                </a>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
+                            )}
+                        </div>
+                    </div>
 
-                                {/* QUIZ */}
-                                {course.tests && course.tests[title] && (
-                                    <div className="quiz-section" style={{ background: "#111", padding: "1.5rem", borderRadius: "6px", border: "1px solid #333", borderLeft: "3px solid #a855f7" }}>
-                                        <h4 style={{ marginBottom: "1rem", color: "#a855f7" }}>📝 Knowledge Check</h4>
-                                        <div style={{ fontSize: "0.95rem", whiteSpace: "pre-wrap" }}>
-                                            {course.tests[title]}
-                                        </div>
+                    {/* --- RIGHT SIDE (Lessons) --- */}
+                    <div className="lessons-section">
+                        <h2 style={{ fontSize:"1.8rem", marginBottom:"2rem" }}>Curriculum</h2>
+                        {lessonKeys.length > 0 ? lessonKeys.map((title, i) => (
+                            <div key={i} className="lesson-card">
+                                <div className="lesson-header" onClick={() => toggleLesson(title)}>
+                                    <div style={{ display:"flex", alignItems:"center" }}>
+                                        <span className="lesson-number">{formatLessonNumber(i+1)}</span>
+                                        <h3>{title}</h3>
+                                    </div>
+                                    {expandedLessons[title] ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
+                                </div>
+                                {expandedLessons[title] && (
+                                    <div className="lesson-content">
+                                        <div className="html-content" dangerouslySetInnerHTML={{ __html: course.lessons[title] }}/>
+                                        {course.tests && course.tests[title] && (
+                                            <div className="quiz-box">
+                                                <div className="quiz-title"><BookOpen size={18}/><span>Knowledge Check</span></div>
+                                                <div className="html-content" dangerouslySetInnerHTML={{ __html: course.tests[title] }}/>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
+                        )) : (
+                            <p style={{color: "#666"}}>No lessons available.</p>
                         )}
                     </div>
-                )) : (
-                    <div className="glass-card text-center"><p>No lessons available.</p></div>
-                )}
-            </div>
+                </div>
 
+                {/* --- FOOTER BUTTONS --- */}
+                <div style={{ marginTop: "5rem", borderTop: "1px solid #222", paddingTop: "2rem", display: "flex", justifyContent: "center", gap: "1.5rem" }}>
+                    <button 
+                        onClick={() => navigate("/dashboard")} 
+                        className="btn btn-secondary"
+                        style={{ padding: "0.8rem 1.5rem", borderRadius: "8px", borderColor: "#333", color: "#ccc", display:"flex", alignItems:"center" }}
+                    >
+                        <LayoutGrid size={18} style={{marginRight:"8px"}}/> Dashboard
+                    </button>
+                    <button 
+                        onClick={() => navigate("/dashboard", { state: { activeTab: "generate" } })} 
+                        className="btn btn-primary" 
+                        style={{ background:"#fff", color:"#000", fontWeight: "600", padding: "0.8rem 1.5rem", borderRadius: "8px", display:"flex", alignItems:"center" }}
+                    >
+                        <PlusCircle size={18} style={{marginRight:"8px"}}/> Start New Course
+                    </button>
+                </div>
+
+            </main>
         </div>
-      </main>
-    </>
-  );
+    );
 }

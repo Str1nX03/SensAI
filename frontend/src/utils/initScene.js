@@ -11,7 +11,6 @@ export function initScene() {
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.z = 3;
 
-    /* 🔥 TEST MODEL — goes RIGHT HERE */
     const geo = new THREE.TorusKnotGeometry(1, 0.4, 120, 16);
     const mat = new THREE.MeshStandardMaterial({ 
         color: "#03ffea", 
