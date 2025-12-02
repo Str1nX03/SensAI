@@ -8,3 +8,8 @@ langchain_tavily
 ipykernel
 python-dotenv
 flask_sqlalchemy
+langchain_chroma
+langchain_community
+langchain_text_splitters
+sentence_transformers
+pypdf
