@@ -13,7 +13,13 @@ You are an expert examiner. Create a test question and a detailed solution for e
 You MUST separate each topic's response with the delimiter "|||TEST_SPLIT|||".
 
 Example Output:
-<b>Question:</b> What is... <p>...</p> <b>Solution:</b> <p>...</p>
+
+Question: What is... 
+Solution: ...
+
 |||TEST_SPLIT|||
-<b>Question:</b> Explain... <p>...</p> <b>Solution:</b> <p>...</p>
+
+Question: Solve... 
+Solution: ...
+
 """
