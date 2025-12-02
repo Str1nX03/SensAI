@@ -1,0 +1,129 @@
+/* src/styles/display-cards.css */
+
+.dc-grid {
+  display: grid;
+  grid-template-areas: 'stack';
+  place-items: center;
+  margin-top: 4rem; 
+  padding: 4rem 2rem; 
+}
+
+@keyframes dc-fade-in {
+  to { opacity: 1; }
+}
+
+/* --- INDIVIDUAL CARD STYLING --- */
+.dc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  
+  /* Dimensions */
+  min-height: 14rem; 
+  width: 24rem;      
+  
+  /* Appearance */
+  border-radius: 1rem;
+  border: 2px solid var(--border-subtle);
+  background: rgba(20, 20, 20, 0.85);
+  backdrop-filter: blur(8px);
+  user-select: none;
+  
+  /* Spacing */
+  padding: 1.5rem;
+  
+  /* Transition */
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  grid-area: stack;
+  box-shadow: -10px 10px 20px rgba(0,0,0,0.5);
+}
+
+/* --- HOVER STATE  --- */
+.dc-card:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(30, 30, 30, 1);
+  box-shadow: -20px 40px 60px rgba(0,0,0,0.7);
+  filter: grayscale(0%) brightness(1);
+}
+
+.dc-card::after {
+  content: '';
+  position: absolute;
+  right: -0.25rem;
+  top: -5%;
+  height: 110%;
+  width: 20rem;
+  background: linear-gradient(to left, rgba(0,0,0,1), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dc-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dc-icon-box {
+  display: inline-flex;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--primary-color);
+}
+
+.dc-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.dc-desc {
+  font-size: 0.95rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.dc-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 1.5rem;
+  text-align: right;
+  font-family: var(--font-mono);
+}
+
+/* --- POSITIONING VARIANTS --- */
+
+/* CARD 1 */
+.dc-card-1 {
+  z-index: 1;
+  transform: skewY(-8deg) translateX(0) translateY(0);
+  filter: grayscale(100%) brightness(0.7);
+}
+.dc-card-1:hover {
+  transform: skewY(-9deg) translateX(0) translateY(-7rem);
+}
+
+/* CARD 2 */
+.dc-card-2 {
+  z-index: 2;
+  transform: skewY(-8deg) translateX(3rem) translateY(4rem);
+  filter: grayscale(100%) brightness(0.8);
+}
+.dc-card-2:hover {
+  transform: skewY(-9deg) translateX(3rem) translateY(-3rem);
+}
+
+/* CARD 3 */
+.dc-card-3 {
+  z-index: 3;
+  transform: skewY(-8deg) translateX(6rem) translateY(8rem);
+}
+.dc-card-3:hover {
+  transform: skewY(-9deg) translateX(6rem) translateY(3rem);
+}
