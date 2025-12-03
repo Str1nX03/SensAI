@@ -1,9 +1,8 @@
-/* src/pages/Dashboard.jsx */
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-    LayoutGrid, LogOut, PlusCircle, BookOpen, Activity, Cpu, Clock, Sparkles, Loader2, CheckCircle, ArrowRight
+    LayoutGrid, LogOut, PlusCircle, BookOpen, Activity, Cpu, Clock, Sparkles, Loader2, CheckCircle, ArrowRight, Trash2
 } from "lucide-react";
 import CpuArchitecture from "../components/CpuArchitecture";
 import "../styles/dashboard.css";
@@ -88,6 +87,30 @@ export default function Dashboard() {
             setGenerationStatus("idle");
             alert("Agent connection failed.");
             console.error(error);
+        }
+    };
+
+    // DELETE LOGIC
+    const handleDeleteCourse = async (e, courseId) => {
+        e.stopPropagation();
+        
+        if (window.confirm("Are you sure you want to permanently delete this course? This action cannot be undone.")) {
+            try {
+                const token = localStorage.getItem("token");
+                setCourses(prev => prev.filter(c => c.id !== courseId));
+
+                await axios.delete(`http://localhost:5000/api/courses/${courseId}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+            } catch (error) {
+                console.error("Failed to delete course", error);
+                alert("Failed to delete course. Please try again.");
+                const token = localStorage.getItem("token");
+                const res = await axios.get("http://localhost:5000/api/courses", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (res.data.courses) setCourses(res.data.courses);
+            }
         }
     };
 
@@ -189,9 +212,9 @@ export default function Dashboard() {
                 )}
 
                 {activeTab === 'generate' && (
-                    <div className="fade-in" style={{ maxWidth: "800px", margin: "0 auto" }}>
+                    <div className="fade-in" style={{ maxWidth: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
                         {generationStatus === "idle" && (
-                            <>
+                            <div style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
                                 <header className="dashboard-header" style={{ justifyContent: "center", textAlign: "center", border: "none" }}>
                                     <div>
                                         <div style={{ display: "inline-flex", padding: "12px", background: "#1a1a1a", borderRadius: "12px", marginBottom: "1rem", color: "#fff" }}><Sparkles size={28} /></div>
@@ -207,18 +230,41 @@ export default function Dashboard() {
                                         <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: "2rem", height: "55px", background: "#fff", color: "#000", fontWeight: "bold" }}>Initialize Agents & Build Course</button>
                                     </form>
                                 </div>
-                            </>
+                            </div>
                         )}
 
                         {generationStatus === "running" && (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "2rem" }}>
-                                <div style={{ transform: "scale(1)" }}>
+                            <div style={{ 
+                                display: "flex", 
+                                flexDirection: "column", 
+                                alignItems: "center", 
+                                justifyContent: "center", 
+                                flexGrow: 1, 
+                                minHeight: "60vh",
+                                textAlign: "center"
+                            }}>
+                                {/* Bigger Animation */}
+                                <div style={{ transform: "scale(1.3)", marginBottom: "2rem" }}>
                                     <CpuArchitecture height="260px" centralLogoUrl="/gojo.png" />
                                 </div>
-                                <h2 style={{ marginTop: "0rem", color: "#fff" }}>Constructing Curriculum...</h2>
-                                <p style={{ color: "#666", marginBottom: "1rem" }}>Agents are researching {form.topic}...</p>
-                                <div style={{ width: "400px", maxWidth: "100%" }}>
-                                    <div className="progress-container"><div className="progress-fill" style={{ width: `${progress}%` }}></div></div>
+                                
+                                <h2 style={{ marginTop: "1rem", color: "#fff", fontWeight: "500" }}>Constructing Curriculum...</h2>
+                                <p style={{ color: "#666", marginBottom: "2rem" }}>Agents are researching {form.topic}...</p>
+                                
+                                {/* New Small Progress Bar Style */}
+                                <div style={{ width: "320px", display: "flex", alignItems: "center", gap: "12px" }}>
+                                    <div style={{ flexGrow: 1, height: "6px", background: "#222", borderRadius: "10px", overflow: "hidden" }}>
+                                        <div style={{ 
+                                            height: "100%", 
+                                            background: "#fff", 
+                                            width: `${progress}%`, 
+                                            transition: "width 0.4s ease-out",
+                                            boxShadow: "0 0 10px rgba(255,255,255,0.5)" 
+                                        }}></div>
+                                    </div>
+                                    <span style={{ fontSize: "0.85rem", color: "#fff", fontFamily: "monospace", minWidth: "35px" }}>
+                                        {Math.round(progress)}%
+                                    </span>
                                 </div>
                             </div>
                         )}
@@ -245,7 +291,29 @@ export default function Dashboard() {
                                 <div style={{ background: "#1a1a1a", padding: "1rem", borderRadius: "50%" }}><PlusCircle size={24} /></div><span style={{ fontWeight: 500 }}>Create New Course</span>
                             </div>
                             {courses.map(course => (
-                                <div key={course.id} className="bento-card" onClick={() => navigate(`/product/${course.id}`)}>
+                                <div key={course.id} className="bento-card" onClick={() => navigate(`/product/${course.id}`)} style={{ position: "relative", group: "course-card" }}>
+                                    {/* Delete Button */}
+                                    <button 
+                                        onClick={(e) => handleDeleteCourse(e, course.id)}
+                                        style={{
+                                            position: "absolute",
+                                            top: "12px",
+                                            right: "12px",
+                                            background: "rgba(0,0,0,0.5)",
+                                            border: "none",
+                                            borderRadius: "8px",
+                                            padding: "6px",
+                                            color: "#888",
+                                            cursor: "pointer",
+                                            transition: "all 0.2s",
+                                            zIndex: 10
+                                        }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.color = "#ff4444"; e.currentTarget.style.background = "rgba(255, 68, 68, 0.1)"; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.color = "#888"; e.currentTarget.style.background = "rgba(0,0,0,0.5)"; }}
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+
                                     <div className="card-top">
                                         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "1rem", color: "#666", fontSize: "0.8rem" }}><BookOpen size={14} />{course.subject}</div>
                                         <h4>{course.topic}</h4>
