@@ -2,7 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, BookOpen, ChevronDown, ChevronUp, PlusCircle, LayoutGrid } from "lucide-react";
+import { 
+    ArrowLeft, BookOpen, ChevronDown, ChevronUp, PlusCircle, LayoutGrid, 
+    CheckCircle, ArrowRight 
+} from "lucide-react";
 import "../styles/product.css";
 
 export default function Product() {
@@ -14,7 +17,32 @@ export default function Product() {
     const [loading, setLoading] = useState(true);
     const [expandedLessons, setExpandedLessons] = useState({});
 
-    // Fetch Course
+    // --- GLOBAL STATUS STATE ---
+    const [genStatus, setGenStatus] = useState("idle");
+    const [genId, setGenId] = useState(null);
+    const [progress, setProgress] = useState(0);
+
+    // 1. READ GLOBAL STATUS ON MOUNT
+    useEffect(() => {
+        const status = localStorage.getItem("dash_genStatus");
+        const newId = localStorage.getItem("dash_genId");
+        
+        if (status) setGenStatus(status);
+        if (newId) setGenId(newId);
+
+        let interval;
+        if (status === "running") {
+            interval = setInterval(() => {
+                setProgress((old) => (old >= 90 ? 90 : old + 1));
+            }, 1000);
+        } else {
+            setProgress(100);
+        }
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // 2. FETCH COURSE
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -36,6 +64,7 @@ export default function Product() {
         });
     }, [id, navigate]);
 
+    // --- HELPERS ---
     const toggleLesson = (title) => {
         setExpandedLessons(prev => ({ ...prev, [title]: !prev[title] }));
     };
@@ -47,79 +76,143 @@ export default function Product() {
         return match ? parseInt(match[1], 10) : 999;
     };
 
-    if (loading) return <div className="p-5 text-center" style={{color:"#fff", paddingTop: "50px"}}>Loading Content...</div>;
-    if (!course) return <div className="p-5 text-center" style={{color:"#fff", paddingTop: "50px"}}>Course data unavailable.</div>;
+    const cleanTitle = (title) => {
+        const boldMatch = title.match(/\*\*(.*?)\*\*/);
+        if (boldMatch && boldMatch[1]) {
+            return boldMatch[1].trim();
+        }
+        return title.replace(/^[#\s]+/, '').replace(/\*\*/g, '').trim();
+    };
 
-    const safeIntro = course.intro 
-        ? course.intro.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ') 
-        : "";
+    const cleanOverview = (text) => {
+        if (!text) return "";
+        return text.replace(/^[#]+\s*/gm, '').replace(/\*\*/g, '').replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ').trim();
+    };
 
-    // Sort lesson keys
+    const cleanLessonContent = (content) => {
+        if (!content) return "";
+        let cleaned = content;
+        cleaned = cleaned.replace(/^\s*(###|\*\*|##)\s*Lesson.*$/im, '');
+        cleaned = cleaned.replace(/^\s*Lesson\s+\d+[:.].*$/im, '');
+        cleaned = cleaned.replace(/Lesson\s+\d+:.*Lesson\s+\d+:.*\n?/i, '');
+        cleaned = cleaned.replace(/^\s*###\s*/, '');
+        return cleaned.trim();
+    };
+
+    // --- HANDLE TOAST CLICK ---
+    const handleToastClick = () => {
+        if (genStatus === "completed" && genId) {
+            if (String(genId) === String(id)) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                navigate(`/product/${genId}`);
+            }
+        } else {
+            navigate("/dashboard", { state: { activeTab: "generate" } });
+        }
+    };
+
+    // --- NEW: HANDLE START NEW COURSE CLICK ---
+    const handleStartNewCourse = () => {
+        if (genStatus === "running") {
+            navigate("/dashboard", { state: { activeTab: "generate" } });
+        } else {
+            navigate("/dashboard", { state: { activeTab: "generate", resetForm: true } });
+        }
+    };
+
+    if (loading) return <div className="loading-container">Loading Content...</div>;
+    if (!course) return <div className="loading-container">Course data unavailable.</div>;
+
     const lessonKeys = course.lessons 
         ? Object.keys(course.lessons).sort((a, b) => getLessonNumber(a) - getLessonNumber(b)) 
         : [];
 
     return (
-        <div style={{ background: "#0d0d0d", minHeight: "100vh", color: "#fff" }}>
-            {/* NAV */}
-            <nav style={{ padding: "1.5rem 3rem", borderBottom: "1px solid #333", display: "flex", alignItems: "center" }}>
-                <button 
-                    onClick={() => navigate("/dashboard")} 
-                    style={{ background:"none", border:"none", color:"#fff", cursor:"pointer", display:"flex", alignItems:"center", gap:"10px" }}
+        <div className="product-container">
+            
+            {/* --- PERSISTENT FLOATING TOAST --- */}
+            {genStatus !== "idle" && (
+                <div
+                    className="persistent-toast"
+                    onClick={handleToastClick}
+                    style={{
+                        border: genStatus === "completed" ? "1px solid #03ae00" : "1px solid #333",
+                        opacity: 0.9,
+                    }}
                 >
+                    {genStatus === "running" ? (
+                        <>
+                            <div className="toast-pulse-dot"></div>
+                            <div>
+                                <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#fff", display: "block" }}>Agent Active</span>
+                                <span style={{ fontSize: "0.75rem", color: "#888" }}>Building Course... ({progress}%)</span>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div style={{ color: "#03ae00", display: "flex", alignItems: "center" }}><CheckCircle size={18} /></div>
+                            <div>
+                                <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#fff", display: "block" }}>Course Ready!</span>
+                                <span style={{ fontSize: "0.75rem", color: "#03ae00", fontWeight: "bold" }}>
+                                    {String(genId) === String(id) ? "You are here" : "Click to Open"} <ArrowRight size={10} style={{ display: "inline" }} />
+                                </span>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+
+            {/* --- NAVIGATION --- */}
+            <nav className="product-nav">
+                <button onClick={() => navigate("/dashboard")} className="nav-btn-back">
                     <ArrowLeft size={20}/> Back to Dashboard
                 </button>
             </nav>
 
-            <main className="product-page" style={{ maxWidth:"1200px", margin:"0 auto", padding:"3rem 2rem" }}>
+            {/* --- MAIN CONTENT --- */}
+            <main className="product-main">
                 
-                {/* HEADER */}
-                <header style={{ textAlign:"center", marginBottom:"4rem" }}>
-                    <h1 style={{ fontSize:"3rem", fontWeight:"700", marginBottom:"1rem", background:"linear-gradient(to right, #fff, #888)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
-                        {course.topic}
-                    </h1>
-                    <div style={{ fontFamily:"monospace", display:"inline-flex", gap:"1rem", color:"#888" }}>
+                <header className="product-header">
+                    <h1 className="product-title">{course.topic}</h1>
+                    <div className="product-meta">
                         <span>{course.subject?.toUpperCase() || "SUBJECT"}</span>
-                        <span>//</span>
+                        <span>||</span>
                         <span>GRADE {course.standard || "N/A"}</span>
                     </div>
                 </header>
 
-                <div className="product-layout" style={{ display:"grid", gridTemplateColumns:"320px 1fr", gap:"3rem" }}>
-                    
-                    {/* --- LEFT SIDEBAR (Overview Text Only) --- */}
+                <div className="product-layout">
+                    {/* LEFT: Overview */}
                     <div className="overview-section">
-                        <div className="glass-card" style={{ background:"#1a1a1a", border:"1px solid #333", padding:"1.5rem", borderRadius:"12px", position: "sticky", top: "2rem" }}>
-                            
-                            <h3 style={{ fontSize:"1.1rem", marginBottom:"1rem", color:"#fff", display:"flex", alignItems:"center", gap:"8px" }}>
+                        <div className="overview-card">
+                            <h3 className="overview-header">
                                 <BookOpen size={18} color="#888"/> Course Overview
                             </h3>
-                            
-                            {/* Just the text content, no links section below */}
-                            <div className="html-content simple-text" style={{fontSize: "0.95rem", color:"#ccc", lineHeight:"1.6"}} dangerouslySetInnerHTML={{ __html: safeIntro }} />
+                            <div className="overview-text" dangerouslySetInnerHTML={{ __html: cleanOverview(course.intro) }} />
                         </div>
                     </div>
 
-                    {/* --- RIGHT SIDE (Lessons) --- */}
+                    {/* RIGHT: Lessons */}
                     <div className="lessons-section">
-                        <h2 style={{ fontSize:"1.8rem", marginBottom:"2rem" }}>Curriculum</h2>
+                        <h2 className="lessons-title">Curriculum</h2>
                         {lessonKeys.length > 0 ? lessonKeys.map((title, i) => (
                             <div key={i} className="lesson-card">
                                 <div className="lesson-header" onClick={() => toggleLesson(title)}>
-                                    <div style={{ display:"flex", alignItems:"center" }}>
+                                    <div className="lesson-header-content">
                                         <span className="lesson-number">{formatLessonNumber(i+1)}</span>
-                                        <h3>{title}</h3>
+                                        <h3>{cleanTitle(title)}</h3>
                                     </div>
                                     {expandedLessons[title] ? <ChevronUp size={20}/> : <ChevronDown size={20}/>}
                                 </div>
+                                
                                 {expandedLessons[title] && (
-                                    <div className="lesson-content">
-                                        <div className="html-content" dangerouslySetInnerHTML={{ __html: course.lessons[title] }}/>
+                                    <div className="lesson-body">
+                                        <div className="html-content" dangerouslySetInnerHTML={{ __html: cleanLessonContent(course.lessons[title]) }}/>
                                         
-                                        {/* Quiz Section inside Lesson */}
                                         {course.tests && course.tests[title] && (
                                             <div className="quiz-box">
-                                                <div className="quiz-title"><BookOpen size={18}/><span>Knowledge Check</span></div>
+                                                <div className="quiz-header"><BookOpen size={18}/><span>Knowledge Check</span></div>
                                                 <div className="html-content" dangerouslySetInnerHTML={{ __html: course.tests[title] }}/>
                                             </div>
                                         )}
@@ -132,19 +225,14 @@ export default function Product() {
                     </div>
                 </div>
 
-                {/* --- FOOTER BUTTONS --- */}
-                <div style={{ marginTop: "5rem", borderTop: "1px solid #222", paddingTop: "2rem", display: "flex", justifyContent: "center", gap: "1.5rem" }}>
-                    <button 
-                        onClick={() => navigate("/dashboard")} 
-                        className="btn btn-secondary"
-                        style={{ padding: "0.8rem 1.5rem", borderRadius: "8px", borderColor: "#333", color: "#ccc", display:"flex", alignItems:"center" }}
-                    >
+                {/* --- FOOTER --- */}
+                <div className="product-footer">
+                    <button onClick={() => navigate("/dashboard")} className="btn-dashboard">
                         <LayoutGrid size={18} style={{marginRight:"8px"}}/> Dashboard
                     </button>
                     <button 
-                        onClick={() => navigate("/dashboard", { state: { activeTab: "generate" } })} 
-                        className="btn btn-primary" 
-                        style={{ background:"#fff", color:"#000", fontWeight: "600", padding: "0.8rem 1.5rem", borderRadius: "8px", display:"flex", alignItems:"center" }}
+                        onClick={handleStartNewCourse} 
+                        className="btn-new-course"
                     >
                         <PlusCircle size={18} style={{marginRight:"8px"}}/> Start New Course
                     </button>

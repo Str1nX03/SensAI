@@ -191,5 +191,29 @@ def get_course_details(id):
         "tests": json.loads(c.tests_json or "{}")
     })
 
+    # 4. DELETE COURSE
+@app.route("/api/courses/<int:id>", methods=["DELETE"])
+@jwt_required()
+def delete_course(id):
+    current_user_id = get_jwt_identity()
+    
+    # Find the course
+    course = Course.query.get(id)
+
+    if not course:
+        return jsonify({"message": "Course not found"}), 404
+
+    # Security Check: Ensure the user deleting it actually owns it
+    if course.user_id != int(current_user_id):
+        return jsonify({"message": "Unauthorized action"}), 403
+
+    try:
+        db.session.delete(course)
+        db.session.commit()
+        return jsonify({"message": "Course deleted successfully", "id": id}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Failed to delete course", "error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

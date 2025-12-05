@@ -3,20 +3,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-// 1. Keep your utility
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
 gsap.registerPlugin(ScrollTrigger);
 
-// 2. Modified function that returns a cleanup function
 export function initAnimations() {
   
-  // Create a GSAP Context scope
   let ctx = gsap.context(() => {
 
-    // --- 1. HERO ANIMATIONS ---
+    // --- HERO ANIMATIONS ---
     gsap.from(".hero-title", {
       opacity: 0,
       y: 30,
@@ -42,7 +39,6 @@ export function initAnimations() {
       delay: 0.6
     });
 
-    // Shader Animation
     const shader = document.querySelector(".hero-left-shader");
     if (shader) {
       gsap.from(shader, {
@@ -54,40 +50,23 @@ export function initAnimations() {
       });
     }
 
-    // --- 2. LANDING 1 CARDS ---
-    // Batch is great, but ensure elements exist first
-    if (document.querySelector(".feature-card-new")) {
-      ScrollTrigger.batch(".feature-card-new", {
-        start: "top 85%",
-        onEnter: (batch) => gsap.to(batch, {
-          opacity: 1,
-          y: 0,
-          stagger: 0.2,
-          duration: 0.8,
-          ease: "power3.out",
-          overwrite: true // Prevents conflict if scrolled fast
-        })
-      });
-      // Set initial state via CSS or set immediately to avoid FOUC
-      gsap.set(".feature-card-new", { opacity: 0, y: 50 });
-    }
-
-    // --- 3. LANDING 2 CARDS ---
+    // --- LANDING CARDS ---
     if (document.querySelector(".dc-card")) {
       gsap.from(".dc-card", {
         scrollTrigger: {
-          trigger: ".features-section",
-          start: "top 75%",
+          trigger: ".dc-grid",
+          start: "top 85%",
         },
         opacity: 0,
-        y: 60,
-        duration: 0.8,
+        y: 100,
+        duration: 1,
         stagger: 0.2,
-        ease: "back.out(1.7)"
+        ease: "back.out(1.2)",
+        clearProps: "all" 
       });
     }
 
-    // --- 4. ABOUT PAGE ---
+    // --- ABOUT PAGE ---
     if (document.querySelector(".about-title")) {
         gsap.from(".about-title", {
             opacity: 0,
@@ -115,8 +94,7 @@ export function initAnimations() {
         });
     }
 
-  }); // End of Context
+  });
 
-  // Return the cleanup function
   return () => ctx.revert();
 }
