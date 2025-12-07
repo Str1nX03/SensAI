@@ -11,13 +11,13 @@ Unlike standard AI wrappers, SensAI orchestrates three distinct specialized agen
 Here's a glimpse of the Draftware application in action.
 
 **Landing Page** 
-![Landing Page](./static/images/screenshot_landing.png)
+![Landing Page](./website/screenshot_landing.png)
 
 **Dashboard** 
-![Dashboard](./static/images/screenshot_dashboard.png)
+![Dashboard](./website/screenshot_dashboard.png)
 
-**Drafts Review Modal** 
-![Drafts Modal](./static/images/screenshot_modal.png)
+**Course Model** 
+![Course Model](./website/screenshot_course.png)
 
 ## 🌟 Features
 
