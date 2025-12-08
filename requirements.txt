@@ -6,7 +6,6 @@ langchain_groq
 langchain_core
 langchain_tavily
 ipykernel
-=======
 python-dotenv
 flask_sqlalchemy
 langchain_chroma
@@ -16,4 +15,4 @@ sentence_transformers
 pypdf
 ragas
 datasets
->>>>>>> 77cadb83a05d205543ce4008e6651b5f96f0a9ad
+gunicorn
