@@ -45,7 +45,11 @@ export default function Dashboard() {
         return saved && saved !== "null" && saved !== "undefined" ? parseInt(saved, 10) : null;
     });
 
-    const [progress, setProgress] = useState(0);
+    const [progress, setProgress] = useState(() => {
+        const saved = localStorage.getItem("dash_progress");
+        return saved ? parseInt(saved, 10) : 0;
+    });
+
     const progressInterval = useRef(null);
     const [form, setForm] = useState({ subject: "", topic: "", standard: "" });
 
@@ -55,10 +59,22 @@ export default function Dashboard() {
     
     // CATALOG MODAL STATES
     const [catalogModal, setCatalogModal] = useState(false);
-    const [catalogStep, setCatalogStep] = useState("subject"); // 'subject' or 'topic'
+    const [catalogStep, setCatalogStep] = useState("subject"); 
     const [selectedCatalogSubject, setSelectedCatalogSubject] = useState(null);
 
     // --- 2. HELPERS ---
+
+    // MOVED UP & MEMOIZED: handleLogout needs to be defined before fetchCourses
+    const handleLogout = useCallback(() => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("dash_genStatus");
+        localStorage.removeItem("dash_genId");
+        localStorage.removeItem("dash_newId");
+        localStorage.removeItem("dash_progress");
+        sessionStorage.removeItem("dash_session_active");
+        navigate("/login");
+    }, [navigate]);
+
     const fetchCourses = useCallback(() => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -74,15 +90,22 @@ export default function Dashboard() {
                     setCourses(res.data.courses);
                 }
             })
-            .catch(err => console.error(err));
-    }, [navigate]);
+            .catch(err => {
+                console.error(err);
+                if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+                    handleLogout();
+                }
+            });
+    }, [navigate, handleLogout]); // Added handleLogout dependency
 
     const startProgressLoop = useCallback(() => {
         clearInterval(progressInterval.current);
         progressInterval.current = setInterval(() => {
             setProgress((old) => {
                 if (old >= 90) return 90;
-                return old + (old < 50 ? 5 : 1);
+                const next = old + (old < 50 ? 5 : 1);
+                localStorage.setItem("dash_progress", next);
+                return next;
             });
         }, 800);
     }, []);
@@ -94,17 +117,18 @@ export default function Dashboard() {
         }
 
         const savedStatus = localStorage.getItem("dash_genStatus");
-        const isEnvironmentAlive = window.dash_gen_active === true;
+        const isEnvironmentAlive = sessionStorage.getItem("dash_session_active") === "true";
 
         if (savedStatus === "running") {
             if (!isEnvironmentAlive) {
                 setGenerationStatus("idle");
                 localStorage.setItem("dash_genStatus", "idle");
-                window.dash_gen_active = false;
+                localStorage.removeItem("dash_progress");
+                sessionStorage.removeItem("dash_session_active");
                 
                 setErrorModal({
                     show: true,
-                    message: "Generation was interrupted because the page was reloaded. Please try again."
+                    message: "Generation was interrupted. Please try again."
                 });
             } else {
                 setGenerationStatus("running");
@@ -112,12 +136,13 @@ export default function Dashboard() {
             }
         }
         else if (location.state?.resetForm) {
-            if (savedStatus !== "running" || !isEnvironmentAlive) {
+            if (savedStatus !== "running") {
                 setGenerationStatus("idle");
                 setForm({ subject: "", topic: "", standard: "" });
                 localStorage.removeItem("dash_genStatus");
                 localStorage.removeItem("dash_genId");
-                window.dash_gen_active = false;
+                localStorage.removeItem("dash_progress");
+                sessionStorage.removeItem("dash_session_active");
             }
         }
         else if (savedStatus === "completed") {
@@ -152,7 +177,6 @@ export default function Dashboard() {
             if (value > 12) value = "12";
             if (value < 0) value = "1"; 
         }
-
         setForm({ ...form, [name]: value });
     };
 
@@ -186,9 +210,10 @@ export default function Dashboard() {
         e.preventDefault();
         if (!form.topic || !form.subject || !form.standard) return alert("Please fill all fields");
 
-        window.dash_gen_active = true;
+        sessionStorage.setItem("dash_session_active", "true");
         setGenerationStatus("running");
         setProgress(0);
+        localStorage.setItem("dash_progress", "0");
         startProgressLoop();
         localStorage.setItem("dash_genStatus", "running");
 
@@ -201,6 +226,7 @@ export default function Dashboard() {
             if (res.data.success) {
                 clearInterval(progressInterval.current);
                 setProgress(100);
+                localStorage.setItem("dash_progress", "100");
 
                 const rawId = res.data.course_id || res.data.id || res.data.courseId;
                 const newId = rawId ? parseInt(rawId, 10) : null;
@@ -221,11 +247,13 @@ export default function Dashboard() {
             clearInterval(progressInterval.current);
             setGenerationStatus("idle");
             localStorage.setItem("dash_genStatus", "idle");
-            window.dash_gen_active = false;
+            localStorage.removeItem("dash_progress");
+            sessionStorage.removeItem("dash_session_active");
+            
             console.error(error);
             setErrorModal({
                 show: true,
-                message: "Generation failed. The server did not return a valid Course ID."
+                message: "Generation failed. Please try again."
             });
         }
     };
@@ -252,7 +280,8 @@ export default function Dashboard() {
                 setGenerationStatus("idle");
                 localStorage.removeItem("dash_genStatus");
                 localStorage.removeItem("dash_genId");
-                window.dash_gen_active = false;
+                localStorage.removeItem("dash_progress");
+                sessionStorage.removeItem("dash_session_active");
             }
 
             await axios.delete(`http://localhost:5000/api/courses/${courseId}`, {
@@ -266,24 +295,17 @@ export default function Dashboard() {
         }
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("dash_genStatus");
-        localStorage.removeItem("dash_genId");
-        localStorage.removeItem("dash_newId");
-        window.dash_gen_active = false;
-        navigate("/login");
-    };
-
     const openCourse = (courseId) => {
         const targetId = courseId || localStorage.getItem("dash_genId");
+        
         if (!targetId || targetId === "null" || targetId === "undefined") {
             setErrorModal({ 
                 show: true, 
-                message: "Course ID is missing. The generation might have failed or data was lost." 
+                message: "Course ID is missing. Please create a new course." 
             });
             return;
         }
+        
         const validId = parseInt(targetId, 10);
         if (validId === newlyCreatedId) {
             setNewlyCreatedId(null);
@@ -317,7 +339,7 @@ export default function Dashboard() {
                         {catalogStep === "subject" ? (
                             <div className="catalog-content">
                                 <h3 className="dashboard-modal-title" style={{textAlign: "center", marginBottom: "5px"}}>Select a Subject</h3>
-                                <p style={{textAlign: "center", color: "var(--light-grey)", marginBottom: "20px"}}>Choose a domain to explore</p>
+                                <p style={{textAlign: "center", color: "var(--text-secondary)", marginBottom: "20px"}}>Choose a domain to explore</p>
                                 <div className="catalog-grid">
                                     {Object.keys(CATALOG_DATA).map((subject) => (
                                         <button 
@@ -333,12 +355,12 @@ export default function Dashboard() {
                         ) : (
                             <div className="catalog-content">
                                 <div style={{display: "flex", alignItems: "center", marginBottom: "20px"}}>
-                                    <button onClick={handleCatalogBack} className="btn-icon-text" style={{marginRight: "15px", background: "none", border: "none", color: "var(--text-color)", cursor: "pointer"}}>
+                                    <button onClick={handleCatalogBack} className="btn-icon-text" style={{marginRight: "15px", background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer"}}>
                                         <ArrowLeft size={20} /> Back
                                     </button>
                                     <h3 className="dashboard-modal-title" style={{margin: 0}}>Select Topic</h3>
                                 </div>
-                                <p style={{color: "var(--electric-blue)", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px", marginBottom: "20px"}}>
+                                <p style={{color: "var(--primary-color)", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px", marginBottom: "20px"}}>
                                     Subject: <b>{selectedCatalogSubject}</b>
                                 </p>
                                 <div className="catalog-grid">
@@ -499,9 +521,9 @@ export default function Dashboard() {
                                                     alignItems: "center", 
                                                     justifyContent: "center", 
                                                     gap: "10px",
-                                                    border: "1px dashed var(--electric-blue)",
+                                                    border: "1px dashed var(--text-quinary)",
                                                     background: "rgba(41, 121, 255, 0.1)",
-                                                    color: "var(--electric-blue)",
+                                                    color: "var(--text-quinary)",
                                                     borderRadius: "8px",
                                                     cursor: "pointer"
                                                 }}
@@ -549,7 +571,7 @@ export default function Dashboard() {
                                 <p className="dashboard-completed-text">Your personalized course has been generated.</p>
                                 <div className="dashboard-completed-actions">
                                     <button className="btn btn-primary dashboard-completed-primary-btn" onClick={() => openCourse(generatedCourseId)}>Start Learning Now</button>
-                                    <button className="btn btn-secondary" onClick={() => { setGenerationStatus("idle"); localStorage.setItem("dash_genStatus", "idle"); setForm({ subject: "", topic: "", standard: "" }); window.dash_gen_active = false; }}>Create Another</button>
+                                    <button className="btn btn-secondary" onClick={() => { setGenerationStatus("idle"); localStorage.setItem("dash_genStatus", "idle"); setForm({ subject: "", topic: "", standard: "" }); sessionStorage.removeItem("dash_session_active"); }}>Create Another</button>
                                 </div>
                             </div>
                         )}

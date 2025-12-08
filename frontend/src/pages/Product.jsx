@@ -16,33 +16,59 @@ export default function Product() {
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [expandedLessons, setExpandedLessons] = useState({});
+    
+    const [showToast, setShowToast] = useState(true);
 
-    // --- GLOBAL STATUS STATE ---
-    const [genStatus, setGenStatus] = useState("idle");
-    const [genId, setGenId] = useState(null);
-    const [progress, setProgress] = useState(0);
+    // --- GLOBAL STATUS STATE  ---
+    // 1. Lazy init genStatus
+    const [genStatus] = useState(() => 
+        localStorage.getItem("dash_genStatus") || "idle"
+    );
+    
+    // 2. Lazy init genId
+    const [genId] = useState(() => 
+        localStorage.getItem("dash_genId")
+    );
 
-    // 1. READ GLOBAL STATUS ON MOUNT
-    useEffect(() => {
+    // 3. Initialize progress from Storage
+    const [progress, setProgress] = useState(() => {
+        const saved = localStorage.getItem("dash_progress");
         const status = localStorage.getItem("dash_genStatus");
-        const newId = localStorage.getItem("dash_genId");
         
-        if (status) setGenStatus(status);
-        if (newId) setGenId(newId);
-
-        let interval;
         if (status === "running") {
-            interval = setInterval(() => {
-                setProgress((old) => (old >= 90 ? 90 : old + 1));
-            }, 1000);
-        } else {
-            setProgress(100);
+            return saved ? parseInt(saved, 10) : 0;
         }
+        return 100;
+    });
 
+    // 4. PROGRESS TIMER
+    useEffect(() => {
+        let interval;
+        if (genStatus === "running") {
+            interval = setInterval(() => {
+                setProgress((old) => {
+                    const next = (old >= 90 ? 90 : old + 1);
+                    // SAVE to storage so Dashboard stays in sync
+                    localStorage.setItem("dash_progress", next);
+                    return next;
+                });
+            }, 1000);
+        }
         return () => clearInterval(interval);
-    }, []);
+    }, [genStatus]);
 
-    // 2. FETCH COURSE
+    // 5. TOAST AUTO-DISMISS
+    useEffect(() => {
+        if (genStatus === "completed" && String(genId) === String(id)) {
+            const timer = setTimeout(() => {
+                setShowToast(false);
+                localStorage.removeItem("dash_genStatus"); 
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [genStatus, genId, id]);
+
+    // 6. FETCH COURSE DATA
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -99,7 +125,7 @@ export default function Product() {
         return cleaned.trim();
     };
 
-    // --- HANDLE TOAST CLICK ---
+    // --- ACTIONS ---
     const handleToastClick = () => {
         if (genStatus === "completed" && genId) {
             if (String(genId) === String(id)) {
@@ -112,7 +138,6 @@ export default function Product() {
         }
     };
 
-    // --- NEW: HANDLE START NEW COURSE CLICK ---
     const handleStartNewCourse = () => {
         if (genStatus === "running") {
             navigate("/dashboard", { state: { activeTab: "generate" } });
@@ -132,13 +157,14 @@ export default function Product() {
         <div className="product-container">
             
             {/* --- PERSISTENT FLOATING TOAST --- */}
-            {genStatus !== "idle" && (
+            {genStatus !== "idle" && showToast && (
                 <div
                     className="persistent-toast"
                     onClick={handleToastClick}
                     style={{
                         border: genStatus === "completed" ? "1px solid #03ae00" : "1px solid #333",
                         opacity: 0.9,
+                        cursor: "pointer"
                     }}
                 >
                     {genStatus === "running" ? (

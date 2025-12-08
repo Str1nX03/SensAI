@@ -740,22 +740,6 @@ body {
     font-weight: 500;
 }
 
-/* New course badge */
-.dashboard-course-new-badge {
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    background: #fff;
-    color: #000;
-    font-weight: 800;
-    font-size: 0.7rem;
-    padding: 4px 8px;
-    border-radius: 4px;
-    z-index: 20;
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
-    transform: rotate(-10deg);
-}
-
 .dashboard-course-delete-btn {
     position: absolute;
     top: 12px;
@@ -786,4 +770,22 @@ body {
 
 .dashboard-course-card {
     position: relative;
+    overflow: hidden;
+}
+
+.dashboard-course-new-badge {
+    position: absolute;
+    bottom: 30px;
+    right: 12px;  
+    left: auto;
+    background-color: #10b981;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 4px 8px;
+    border-radius: 20px;
+    z-index: 20;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+    pointer-events: none;
 }
