@@ -84,7 +84,7 @@ def login():
 
 # ========================== API ROUTES ===========================
 
-# 1. GET COURSES (Renamed to match React)
+# 1. GET COURSES
 @app.route("/api/courses", methods=["GET"])
 @jwt_required()
 def get_courses():
@@ -100,7 +100,6 @@ def get_courses():
     }), 200
 
 # 2. GENERATE COURSE
-
 @app.route("/api/generate", methods=["POST"])
 @jwt_required()
 async def generate_course():
@@ -114,6 +113,12 @@ async def generate_course():
     if not topic or not subject or not standard:
         return jsonify({"success": False, "message": "Missing fields"}), 400
 
+    # --- INTEGER CASTING LOGIC ---
+    try:
+        standard_int = int(standard)
+    except ValueError:
+        standard_int = standard
+
     # 1. CHECK HISTORY
     saved = Course.query.filter_by(user_id=int(uid), topic=topic,
                                    subject=subject, standard=str(standard)).first()
@@ -126,21 +131,30 @@ async def generate_course():
         
         # 2. RUN AGENTS
         assistant = AssistantAgent()
-        state = {"standard": standard, "subject": subject, "topic": topic, "raw_study_links": []}
+        
+        state = {
+            "standard": standard_int,  
+            "subject": subject, 
+            "topic": topic, 
+            "raw_study_links": [],
+            "topic_draft": "",
+            "student_content": "",
+            "instructions": ""
+        }
         
         out = await assistant.graph.ainvoke(state)
         print("Assistant Agent finished.")
 
         tutor = TutoringAgent()
-        lessons = await tutor.run(out["instructions"], standard, subject, topic)
+        # Pass standard_int to Tutor
+        lessons = await tutor.run(out["instructions"], standard_int, subject, topic)
         print("Tutoring Agent finished.")
 
         tester = TestingAgent()
         tests = await tester.run(lessons)
         print("Testing Agent finished.")
 
-        # 3. SAFER JSON PARSING (The Fix)
-        
+        # 3. SAFER JSON PARSING
         def safe_json_dump(content):
             if isinstance(content, str):
                 return content
@@ -191,7 +205,7 @@ def get_course_details(id):
         "tests": json.loads(c.tests_json or "{}")
     })
 
-    # 4. DELETE COURSE
+# 4. DELETE COURSE
 @app.route("/api/courses/<int:id>", methods=["DELETE"])
 @jwt_required()
 def delete_course(id):

@@ -14,7 +14,7 @@ export default function App() {
     <>
       <TubelightNavbar items={navItems} />
 
-      {/* your routes */}
+      {/* for navbar */}
     </>
   );
 }
