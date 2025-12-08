@@ -1,8 +1,19 @@
 flask
+flask[async]
 langchain
 langgraph
 langchain_groq
 langchain_core
 langchain_tavily
 ipykernel
-gunicorn
+=======
+python-dotenv
+flask_sqlalchemy
+langchain_chroma
+langchain_community
+langchain_text_splitters
+sentence_transformers
+pypdf
+ragas
+datasets
+>>>>>>> 77cadb83a05d205543ce4008e6651b5f96f0a9ad

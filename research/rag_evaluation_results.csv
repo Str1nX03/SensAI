@@ -1,0 +1,197 @@
+Question,RAG Answer,No-RAG Answer,Ground Truth
+What is the first law of thermodynamics?,The First Law of Thermodynamics is the principle of conservation of energy.,"The first law of thermodynamics, also known as the law of energy conservation, states that energy cannot be created or destroyed, only converted from one form to another. Mathematically, it can be expressed as:
+
+ΔE = Q - W
+
+Where:
+
+- ΔE is the change in energy of a system
+- Q is the heat added to the system
+- W is the work done on the system
+
+In other words, the total energy of an isolated system remains constant over time, and any energy transferred into or out of the system must be balanced by an equal amount of energy transferred in the opposite direction. This law applies to all forms of energy, including kinetic energy, potential energy, thermal energy, and more.
+
+The first law of thermodynamics is a fundamental principle in physics and engineering, and it has far-reaching implications for our understanding of energy and its behavior in various systems.","The First Law of Thermodynamics is the
+principle of conservation of energy. Common
+experience shows that there are many
+conceivable processes that are perfectly
+allowed by the First Law and yet are never
+observed. For example, nobody has ever seen
+a book lying on a table jumping to a height by
+itself. But such a thing would be possible if
+the principle of conservation of energy were
+the only restriction. The table could cool
+spontaneously, converting some of its internal
+energy into an equal amount of mechanical
+energy of the book, which would then hop to a
+height with potential energy equal to the
+mechanical energy it acquired. But this never
+happens. Clearly, some additional basic
+principle of nature forbids the above, even
+though it satisfies the energy conservation
+principle. This principle, which disallows
+many phenomena consistent with the First
+Law of Thermodynamics is known as the
+Second Law of Thermodynamics."
+Define adiabatic process.,"An adiabatic process is a thermodynamic process in which the system is insulated from the surroundings, and no heat flows between the system and the surroundings.","An adiabatic process is a thermodynamic process in which no heat is transferred between the system and its surroundings. This means that the system is thermally isolated, and there is no exchange of heat energy between the system and the environment.
+
+In an adiabatic process, the system's internal energy changes due to work done on or by the system, but there is no heat transfer. This can occur in various ways, such as:
+
+1. **Adiabatic expansion**: When a gas expands rapidly, it does work on its surroundings, but no heat is transferred.
+2. **Adiabatic compression**: When a gas is compressed rapidly, work is done on the gas, but no heat is transferred.
+3. **Adiabatic heating**: When a gas is compressed adiabatically, its temperature increases due to the conversion of work into internal energy.
+4. **Adiabatic cooling**: When a gas expands adiabatically, its temperature decreases due to the conversion of internal energy into work.
+
+The key characteristics of an adiabatic process are:
+
+1. No heat transfer (Q = 0)
+2. Work is done on or by the system
+3. Internal energy changes due to work done
+4. Temperature changes due to work done (adiabatic heating or cooling)
+
+Adiabatic processes are commonly encountered in various fields, including thermodynamics, engineering, and physics. They are used to describe the behavior of systems that are thermally isolated, such as in the expansion of a gas in a cylinder or the compression of a gas in a piston.","In an adiabatic process, the system is insulated
+from the surroundings and heat absorbed or
+released is zero. From Eq. (11.1), we see that
+work done by the gas results in decrease in its
+internal energy (and hence its temperature for
+an ideal gas). We quote without proof (the result
+that you will learn in higher courses) that for
+an adiabatic process of an ideal gas.
+ P V γ
+ = const (11.13)
+where γ is the ratio of specific heats (ordinary
+or molar) at constant pressure and at constant
+volume.
+ γ =
+Cp
+Cv
+Thus if an ideal gas undergoes a change in
+its state adiabatically from (P1
+, V1
+) to (P2
+, V2
+) :
+P1 V1
+γ
+ = P2 V2
+γ
+(11.14)
+Figure11.8 shows the P-V curves of an ideal
+gas for two adiabatic processes connecting two
+isotherms.
+"
+What is the Carnot engine and its efficiency?,"The Carnot engine is a theoretical engine that represents the most efficient possible engine operating between two given temperatures. It is an idealized engine that demonstrates the maximum possible efficiency of an engine operating between two heat reservoirs.
+
+The efficiency of the Carnot engine is given by the equation:
+
+η = 1 - (T2 / T1)
+
+where η is the efficiency, T1 is the temperature of the hot reservoir, and T2 is the temperature of the cold reservoir.
+
+This equation shows that the efficiency of the Carnot engine is independent of the nature of the working substance, meaning that it does not depend on the specific properties of the material used in the engine. The Carnot engine's efficiency is solely determined by the temperatures of the hot and cold reservoirs.","The Carnot engine is a theoretical heat engine that was first described by French physicist Sadi Carnot in his 1824 book ""Reflections on the Motive Power of Fire."" It is considered one of the most efficient heat engines possible, and its design serves as a benchmark for evaluating the efficiency of real-world heat engines.
+
+**How the Carnot Engine Works:**
+
+The Carnot engine is a reversible heat engine that operates on a cycle of four stages:
+
+1. **Isothermal Expansion**: The engine absorbs heat from a high-temperature reservoir (Qh) and expands, doing work on the surroundings.
+2. **Adiabatic Expansion**: The engine expands further, doing no work, and its temperature decreases.
+3. **Isothermal Compression**: The engine rejects heat to a low-temperature reservoir (Qc) and compresses, doing work on the surroundings.
+4. **Adiabatic Compression**: The engine compresses further, doing no work, and its temperature increases.
+
+**Efficiency of the Carnot Engine:**
+
+The efficiency of the Carnot engine is given by the Carnot efficiency equation:
+
+η = 1 - (Tc / Th)
+
+where η is the efficiency, Tc is the temperature of the low-temperature reservoir, and Th is the temperature of the high-temperature reservoir.
+
+The Carnot efficiency is a function of the temperature ratio between the high-temperature and low-temperature reservoirs. It is always less than 100% (or 1), and it approaches 100% as the temperature ratio approaches infinity.
+
+**Maximum Efficiency:**
+
+The Carnot engine has a maximum efficiency of:
+
+η_max = 1 - (0 K / Th)
+
+Since the temperature of the low-temperature reservoir (Tc) is always greater than absolute zero (0 K), the Carnot efficiency is always less than 100%.
+
+**Real-World Implications:**
+
+The Carnot engine serves as a theoretical limit for the efficiency of real-world heat engines. While no real-world engine can achieve the Carnot efficiency, it provides a benchmark for evaluating the performance of actual engines. The Carnot engine also highlights the importance of minimizing heat losses and maximizing the temperature difference between the high-temperature and low-temperature reservoirs to achieve high efficiency.","Suppose we have a hot reservoir at temperature
+T1
+ and a cold reservoir at temperature T2
+. What
+is the maximum efficiency possible for a heat
+engine operating between the two reservoirs and
+what cycle of processes should be adopted to
+achieve the maximum efficiency ? Sadi Carnot,
+a French engineer, first considered this question
+in 1824. Interestingly, Carnot arrived at the
+correct answer, even though the basic concepts
+of heat and thermodynamics had yet to be firmly
+established.
+We expect the ideal engine operating between
+two temperatures to be a reversible engine.
+Irreversibility is associated with dissipative
+effects, as remarked in the preceding section,
+and lowers efficiency. A process is reversible if
+it is quasi-static and non-dissipative. We have
+seen that a process is not quasi-static if it
+involves finite temperature difference between
+the system and the reservoir. This implies that
+in a reversible heat engine operating between
+two temperatures, heat should be absorbed
+(from the hot reservoir) isothermally and
+released (to the cold reservoir) isothermally. We
+thus have identified two steps of the reversible
+heat engine : isothermal process at temperature
+T1
+ absorbing heat Q1
+ from the hot reservoir, and
+another isothermal process at temperature T2
+releasing heat Q2
+ to the cold reservoir. To
+complete a cycle, we need to take the system
+from temperature T1
+ to T2
+ and then back from
+temperature T2
+ to T1
+. Which processes should
+we employ for this purpose that are reversible?
+A little reflection shows that we can only adopt
+reversible adiabatic processes for these
+purposes, which involve no heat flow from any
+reservoir. If we employ any other process that is
+not adiabatic, say an isochoric process, to take
+the system from one temperature to another, we
+shall need a series of reservoirs in the
+temperature range T2
+ to T1
+ to ensure that at each
+stage the process is quasi-static. (Remember
+again that for a process to be quasi-static and
+reversible, there should be no finite temperature
+difference between the system and the reservoir.)
+But we are considering a reversible engine that
+operates between only two temperatures. Thus
+adiabatic processes must bring about the
+temperature change in the system from T1
+ to T2
+and T2
+ to T1
+ in this engine.
+Fig. 11.9 Carnot cycle for a heat engine with an
+ideal gas as the working substance.
+A reversible heat engine operating between
+two temperatures is called a Carnot engine. We
+have just argued that such an engine must have
+the following sequence of steps constituting one
+Reprint 2025-26
+238 PHYSICS
+cycle, called the Carnot cycle, shown in
+Fig. 11.9. We have taken the working substance
+of the Carnot engine to be an ideal gas.
+"
