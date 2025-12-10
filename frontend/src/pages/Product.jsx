@@ -1,11 +1,10 @@
-/* src/pages/Product.jsx */
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { 
     ArrowLeft, BookOpen, ChevronDown, ChevronUp, PlusCircle, LayoutGrid, 
-    CheckCircle, ArrowRight 
 } from "lucide-react";
+import GlobalProgressToast from "../components/GlobalProgressToast";
 import "../styles/product.css";
 
 export default function Product() {
@@ -16,59 +15,8 @@ export default function Product() {
     const [course, setCourse] = useState(null);
     const [loading, setLoading] = useState(true);
     const [expandedLessons, setExpandedLessons] = useState({});
-    
-    const [showToast, setShowToast] = useState(true);
 
-    // --- GLOBAL STATUS STATE  ---
-    // 1. Lazy init genStatus
-    const [genStatus] = useState(() => 
-        localStorage.getItem("dash_genStatus") || "idle"
-    );
-    
-    // 2. Lazy init genId
-    const [genId] = useState(() => 
-        localStorage.getItem("dash_genId")
-    );
-
-    // 3. Initialize progress from Storage
-    const [progress, setProgress] = useState(() => {
-        const saved = localStorage.getItem("dash_progress");
-        const status = localStorage.getItem("dash_genStatus");
-        
-        if (status === "running") {
-            return saved ? parseInt(saved, 10) : 0;
-        }
-        return 100;
-    });
-
-    // 4. PROGRESS TIMER
-    useEffect(() => {
-        let interval;
-        if (genStatus === "running") {
-            interval = setInterval(() => {
-                setProgress((old) => {
-                    const next = (old >= 90 ? 90 : old + 1);
-                    // SAVE to storage so Dashboard stays in sync
-                    localStorage.setItem("dash_progress", next);
-                    return next;
-                });
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [genStatus]);
-
-    // 5. TOAST AUTO-DISMISS
-    useEffect(() => {
-        if (genStatus === "completed" && String(genId) === String(id)) {
-            const timer = setTimeout(() => {
-                setShowToast(false);
-                localStorage.removeItem("dash_genStatus"); 
-            }, 4000);
-            return () => clearTimeout(timer);
-        }
-    }, [genStatus, genId, id]);
-
-    // 6. FETCH COURSE DATA
+    // 1. FETCH COURSE
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -97,11 +45,6 @@ export default function Product() {
 
     const formatLessonNumber = (n) => n.toString().padStart(2, "0");
 
-    const getLessonNumber = (title) => {
-        const match = title.match(/Lesson\s+(\d+)/i) || title.match(/(\d+)/);
-        return match ? parseInt(match[1], 10) : 999;
-    };
-
     const cleanTitle = (title) => {
         const boldMatch = title.match(/\*\*(.*?)\*\*/);
         if (boldMatch && boldMatch[1]) {
@@ -126,68 +69,28 @@ export default function Product() {
     };
 
     // --- ACTIONS ---
-    const handleToastClick = () => {
-        if (genStatus === "completed" && genId) {
-            if (String(genId) === String(id)) {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            } else {
-                navigate(`/product/${genId}`);
-            }
-        } else {
-            navigate("/dashboard", { state: { activeTab: "generate" } });
-        }
-    };
-
     const handleStartNewCourse = () => {
-        if (genStatus === "running") {
-            navigate("/dashboard", { state: { activeTab: "generate" } });
-        } else {
-            navigate("/dashboard", { state: { activeTab: "generate", resetForm: true } });
-        }
+        navigate("/dashboard", { state: { activeTab: "generate", resetForm: true } });
     };
 
     if (loading) return <div className="loading-container">Loading Content...</div>;
     if (!course) return <div className="loading-container">Course data unavailable.</div>;
 
     const lessonKeys = course.lessons 
-        ? Object.keys(course.lessons).sort((a, b) => getLessonNumber(a) - getLessonNumber(b)) 
+        ? Object.keys(course.lessons).sort((a, b) => {
+            const getNum = (t) => {
+                const m = t.match(/Lesson\s+(\d+)/i) || t.match(/(\d+)/);
+                return m ? parseInt(m[1], 10) : 999;
+            };
+            return getNum(a) - getNum(b);
+        }) 
         : [];
 
     return (
         <div className="product-container">
             
-            {/* --- PERSISTENT FLOATING TOAST --- */}
-            {genStatus !== "idle" && showToast && (
-                <div
-                    className="persistent-toast"
-                    onClick={handleToastClick}
-                    style={{
-                        border: genStatus === "completed" ? "1px solid #03ae00" : "1px solid #333",
-                        opacity: 0.9,
-                        cursor: "pointer"
-                    }}
-                >
-                    {genStatus === "running" ? (
-                        <>
-                            <div className="toast-pulse-dot"></div>
-                            <div>
-                                <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#fff", display: "block" }}>Agent Active</span>
-                                <span style={{ fontSize: "0.75rem", color: "#888" }}>Building Course... ({progress}%)</span>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div style={{ color: "#03ae00", display: "flex", alignItems: "center" }}><CheckCircle size={18} /></div>
-                            <div>
-                                <span style={{ fontSize: "0.85rem", fontWeight: "600", color: "#fff", display: "block" }}>Course Ready!</span>
-                                <span style={{ fontSize: "0.75rem", color: "#03ae00", fontWeight: "bold" }}>
-                                    {String(genId) === String(id) ? "You are here" : "Click to Open"} <ArrowRight size={10} style={{ display: "inline" }} />
-                                </span>
-                            </div>
-                        </>
-                    )}
-                </div>
-            )}
+            {/* ADDED GLOBAL TOAST HERE */}
+            <GlobalProgressToast />
 
             {/* --- NAVIGATION --- */}
             <nav className="product-nav">

@@ -6,6 +6,7 @@ import {
     Loader2, CheckCircle, ArrowRight, Trash2, AlertTriangle, X, ServerCrash, ArrowLeft
 } from "lucide-react";
 import CpuArchitecture from "../components/CpuArchitecture";
+import GlobalProgressToast from "../components/GlobalProgressToast";
 import "../styles/dashboard.css";
 
 // --- CATALOG DATA  ---
@@ -63,8 +64,6 @@ export default function Dashboard() {
     const [selectedCatalogSubject, setSelectedCatalogSubject] = useState(null);
 
     // --- 2. HELPERS ---
-
-    // MOVED UP & MEMOIZED: handleLogout needs to be defined before fetchCourses
     const handleLogout = useCallback(() => {
         localStorage.removeItem("token");
         localStorage.removeItem("dash_genStatus");
@@ -96,7 +95,7 @@ export default function Dashboard() {
                     handleLogout();
                 }
             });
-    }, [navigate, handleLogout]); // Added handleLogout dependency
+    }, [navigate, handleLogout]);
 
     const startProgressLoop = useCallback(() => {
         clearInterval(progressInterval.current);
@@ -180,7 +179,6 @@ export default function Dashboard() {
         setForm({ ...form, [name]: value });
     };
 
-    // --- CATALOG HANDLERS ---
     const openCatalog = () => {
         setCatalogStep("subject");
         setCatalogModal(true);
@@ -314,14 +312,6 @@ export default function Dashboard() {
         navigate(`/product/${validId}`);
     };
 
-    const handleToastClick = () => {
-        if (generationStatus === "completed") {
-            openCourse(generatedCourseId); 
-        } else {
-            setActiveTab("generate");
-        }
-    };
-
     return (
         <div className="app-container">
 
@@ -329,24 +319,16 @@ export default function Dashboard() {
             {catalogModal && (
                 <div className="dashboard-modal-overlay">
                     <div className="dashboard-modal dashboard-catalog-modal">
-                        <button 
-                            onClick={() => setCatalogModal(false)} 
-                            className="dashboard-modal-close"
-                        >
+                        <button onClick={() => setCatalogModal(false)} className="dashboard-modal-close">
                             <X size={20} />
                         </button>
                         
                         {catalogStep === "subject" ? (
                             <div className="catalog-content">
                                 <h3 className="dashboard-modal-title" style={{textAlign: "center", marginBottom: "5px"}}>Select a Subject</h3>
-                                <p style={{textAlign: "center", color: "var(--text-secondary)", marginBottom: "20px"}}>Choose a domain to explore</p>
                                 <div className="catalog-grid">
                                     {Object.keys(CATALOG_DATA).map((subject) => (
-                                        <button 
-                                            key={subject} 
-                                            className="catalog-item-btn"
-                                            onClick={() => handleSubjectSelect(subject)}
-                                        >
+                                        <button key={subject} className="catalog-item-btn" onClick={() => handleSubjectSelect(subject)}>
                                             {subject}
                                         </button>
                                     ))}
@@ -360,16 +342,9 @@ export default function Dashboard() {
                                     </button>
                                     <h3 className="dashboard-modal-title" style={{margin: 0}}>Select Topic</h3>
                                 </div>
-                                <p style={{color: "var(--primary-color)", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "10px", marginBottom: "20px"}}>
-                                    Subject: <b>{selectedCatalogSubject}</b>
-                                </p>
                                 <div className="catalog-grid">
                                     {CATALOG_DATA[selectedCatalogSubject]?.map((topic) => (
-                                        <button 
-                                            key={topic} 
-                                            className="catalog-item-btn"
-                                            onClick={() => handleTopicSelect(topic)}
-                                        >
+                                        <button key={topic} className="catalog-item-btn" onClick={() => handleTopicSelect(topic)}>
                                             {topic}
                                         </button>
                                     ))}
@@ -384,17 +359,11 @@ export default function Dashboard() {
             {errorModal.show && (
                 <div className="dashboard-modal-overlay">
                     <div className="dashboard-modal dashboard-modal-error">
-                        <button onClick={() => setErrorModal({ show: false, message: "" })} className="dashboard-modal-close">
-                            <X size={20} />
-                        </button>
-                        <div className="dashboard-modal-icon dashboard-modal-icon-error">
-                            <ServerCrash size={32} />
-                        </div>
+                        <button onClick={() => setErrorModal({ show: false, message: "" })} className="dashboard-modal-close"><X size={20} /></button>
+                        <div className="dashboard-modal-icon dashboard-modal-icon-error"><ServerCrash size={32} /></div>
                         <h3 className="dashboard-modal-title">Attention</h3>
                         <p className="dashboard-modal-text">{errorModal.message}</p>
-                        <button onClick={() => setErrorModal({ show: false, message: "" })} className="btn dashboard-modal-primary-btn">
-                            Dismiss
-                        </button>
+                        <button onClick={() => setErrorModal({ show: false, message: "" })} className="btn dashboard-modal-primary-btn">Dismiss</button>
                     </div>
                 </div>
             )}
@@ -403,43 +372,13 @@ export default function Dashboard() {
             {deleteModal.show && (
                 <div className="dashboard-modal-overlay">
                     <div className="dashboard-modal dashboard-modal-delete">
-                        <div className="dashboard-modal-icon dashboard-modal-icon-warning">
-                            <AlertTriangle size={32} />
-                        </div>
+                        <div className="dashboard-modal-icon dashboard-modal-icon-warning"><AlertTriangle size={32} /></div>
                         <h3 className="dashboard-modal-title">Delete Course?</h3>
-                        <p className="dashboard-modal-text">This action cannot be undone.</p>
                         <div className="dashboard-modal-actions">
-                            <button onClick={() => setDeleteModal({ show: false, id: null })} className="btn dashboard-modal-btn dashboard-modal-btn-cancel">
-                                Cancel
-                            </button>
-                            <button onClick={executeDelete} className="btn dashboard-modal-btn dashboard-modal-btn-danger">
-                                Delete
-                            </button>
+                            <button onClick={() => setDeleteModal({ show: false, id: null })} className="btn dashboard-modal-btn dashboard-modal-btn-cancel">Cancel</button>
+                            <button onClick={executeDelete} className="btn dashboard-modal-btn dashboard-modal-btn-danger">Delete</button>
                         </div>
                     </div>
-                </div>
-            )}
-
-            {/* --- PERSISTENT POP-UP --- */}
-            {generationStatus !== "idle" && (
-                <div className={`floating-status ${generationStatus === "completed" ? "floating-status--completed" : "floating-status--running"}`} onClick={handleToastClick}>
-                    {generationStatus === "running" ? (
-                        <>
-                            <div className="status-dot"></div>
-                            <div>
-                                <span className="dashboard-toast-title">Agents Active</span>
-                                <span className="dashboard-toast-subtitle">Building "{form.topic || "Course"}" ({Math.round(progress)}%)</span>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="dashboard-toast-icon-success"><CheckCircle size={18} /></div>
-                            <div>
-                                <span className="dashboard-toast-title">Course Ready!</span>
-                                <span className="dashboard-toast-link">Click to Open <ArrowRight size={10} /></span>
-                            </div>
-                        </>
-                    )}
                 </div>
             )}
 
@@ -447,37 +386,28 @@ export default function Dashboard() {
             <aside className="sidebar">
                 <div className="user-profile">
                     <img src="https://ui-avatars.com/api/?name=Student&background=333&color=fff" alt="Profile" className="avatar" />
-                    <div className="user-info">
-                        <h3>Student</h3>
-                        <p>Pro Plan</p>
-                    </div>
+                    <div className="user-info"><h3>Student</h3><p>Pro Plan</p></div>
                 </div>
                 <nav className="nav-menu">
-                    <button className={`nav-item ${activeTab === "usage" ? "active" : ""}`} onClick={() => setActiveTab("usage")}>
-                        <Activity size={20} /> Upcoming Features
-                    </button>
+                    <button className={`nav-item ${activeTab === "usage" ? "active" : ""}`} onClick={() => setActiveTab("usage")}><Activity size={20} /> Upcoming Features</button>
                     <div className="dashboard-sidebar-divider"></div>
                     <button className={`nav-item ${activeTab === "generate" ? "active" : ""}`} onClick={() => setActiveTab("generate")}>
-                        {generationStatus === "running" ? <Loader2 size={20} className="animate-spin" /> : <PlusCircle size={20} />}
-                        Generate Course
+                        {generationStatus === "running" ? <Loader2 size={20} className="animate-spin" /> : <PlusCircle size={20} />} Generate Course
                     </button>
-                    <button className={`nav-item ${activeTab === "courses" ? "active" : ""}`} onClick={() => setActiveTab("courses")}>
-                        <LayoutGrid size={20} /> Active Courses
-                    </button>
+                    <button className={`nav-item ${activeTab === "courses" ? "active" : ""}`} onClick={() => setActiveTab("courses")}><LayoutGrid size={20} /> Active Courses</button>
                     <div className="dashboard-nav-spacer"></div>
-                    <button className="nav-item logout-btn" onClick={handleLogout}>
-                        <LogOut size={20} /> Logout
-                    </button>
+                    <button className="nav-item logout-btn" onClick={handleLogout}><LogOut size={20} /> Logout</button>
                 </nav>
             </aside>
 
             {/* --- MAIN CONTENT --- */}
             <main className="main-content-area">
+                {/* --- ADDED GLOBAL TOAST HERE --- */}
+                <GlobalProgressToast />
+
                 {activeTab === "usage" && (
                     <div className="fade-in">
-                        <header className="dashboard-header">
-                            <div><h1 className="dashboard-page-title">Agent Activity</h1></div>
-                        </header>
+                        <header className="dashboard-header"><div><h1 className="dashboard-page-title">Agent Activity</h1></div></header>
                         <div className="dashboard-usage-list">
                             {MOCK_USAGE_LOGS.map((log) => (
                                 <div key={log.id} className="dashboard-usage-row">
@@ -507,43 +437,14 @@ export default function Dashboard() {
                                 </header>
                                 <div className="glass-card dashboard-generate-card">
                                     <form onSubmit={generateCourse}>
-                                        
-                                        {/* BROWSE BUTTON */}
                                         <div style={{ marginBottom: "20px" }}>
-                                            <button 
-                                                type="button" 
-                                                onClick={openCatalog}
-                                                className="btn-secondary"
-                                                style={{
-                                                    width: "100%", 
-                                                    padding: "10px", 
-                                                    display: "flex", 
-                                                    alignItems: "center", 
-                                                    justifyContent: "center", 
-                                                    gap: "10px",
-                                                    border: "1px dashed var(--text-quinary)",
-                                                    background: "rgba(41, 121, 255, 0.1)",
-                                                    color: "var(--text-quinary)",
-                                                    borderRadius: "8px",
-                                                    cursor: "pointer"
-                                                }}
-                                            >
+                                            <button type="button" onClick={openCatalog} className="btn-secondary" style={{width: "100%", padding: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", border: "1px dashed var(--text-quinary)", background: "rgba(41, 121, 255, 0.1)", color: "var(--text-quinary)", borderRadius: "8px", cursor: "pointer"}}>
                                                 <BookOpen size={18} /> Browse Subject & Topic Catalog
                                             </button>
                                         </div>
-
-                                        <div className="form-group">
-                                            <label className="form-label">Subject</label>
-                                            <input name="subject" className="form-input" placeholder="e.g. Computer Science" onChange={updateForm} value={form.subject} required />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Specific Topic</label>
-                                            <input name="topic" className="form-input" placeholder="e.g. Neural Networks" onChange={updateForm} value={form.topic} required />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">Grade / Proficiency</label>
-                                            <input name="standard" type="number" className="form-input" placeholder="1 - 12" onChange={updateForm} value={form.standard} min="1"max="12"required />
-                                        </div>
+                                        <div className="form-group"><label className="form-label">Subject</label><input name="subject" className="form-input" placeholder="e.g. Computer Science" onChange={updateForm} value={form.subject} required /></div>
+                                        <div className="form-group"><label className="form-label">Specific Topic</label><input name="topic" className="form-input" placeholder="e.g. Neural Networks" onChange={updateForm} value={form.topic} required /></div>
+                                        <div className="form-group"><label className="form-label">Grade / Proficiency</label><input name="standard" type="number" className="form-input" placeholder="1 - 12" onChange={updateForm} value={form.standard} min="1"max="12"required /></div>
                                         <button type="submit" className="btn btn-primary dashboard-generate-submit">Initialize Agents & Build Course</button>
                                     </form>
                                 </div>

@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 
+// ---------------------------
 const loaderImage = "/load.png"; 
+// ---------------------------
 
 import ShaderBackground from "../components/ShaderBackground";
 import ParticleNetwork from "../components/ParticleNetwork"; 
@@ -37,10 +39,8 @@ export default function Landing() {
        return; 
     }
 
-    // Case B: Guard Clause (Fixe for the ESLint issue logic)
     if (loadingState !== 'loading') return;
 
-    // Case C: Perform Loading
     const minWaitTime = new Promise(resolve => setTimeout(resolve, 1000));
     const imageLoad = new Promise((resolve) => {
       const img = new Image();
@@ -50,9 +50,7 @@ export default function Landing() {
     });
 
     Promise.all([minWaitTime, imageLoad]).then(() => {
-      // Start Filling
       setLoadingState('filling');
-
       setTimeout(() => {
         setLoadingState('ready');
       }, 2500); 
@@ -112,107 +110,20 @@ export default function Landing() {
 
   const isLoaderVisible = loadingState !== 'complete';
   const isFadingOut = loadingState === 'entering';
-  
   const isWaveFull = loadingState === 'filling' || loadingState === 'ready' || loadingState === 'entering';
 
   return (
     <>
-      <style>{`
-        @keyframes slide-up-fade {
-          0% { opacity: 0; transform: translateY(30px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-enter {
-          opacity: 0; 
-          animation: slide-up-fade 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-        .delay-1 { animation-delay: 0.2s; } 
-
-        /* --- SPINNING WAVE ANIMATION --- */
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .loader-img-container {
-          position: relative;
-          width: 85vw;
-          max-width: 450px;
-          border-radius: 4px;
-          overflow: hidden; 
-          margin-bottom: 2.5rem;
-          box-shadow: 0 0 30px rgba(0,0,0,0.8);
-          background: #000; 
-          z-index: 0;
-        }
-
-        .loader-img {
-          display: block;
-          width: 100%;
-          height: auto;
-          position: relative;
-          z-index: 10; 
-        }
-
-        .wave-fill {
-          position: absolute;
-          width: 300%;
-          height: 300%;
-          left: -100%;
-          border-radius: 40%;
-          background: rgba(147, 51, 234, 0.5); 
-          animation: spin 6s linear infinite;
-          
-          bottom: -310%; 
-          
-          transition: bottom 2.5s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 1; 
-        }
-
-        .wave-fill.full {
-          bottom: -180%; 
-        }
-
-        .enter-btn {
-          background: transparent;
-          border: 1px solid rgba(255,255,255,0.3);
-          color: white;
-          padding: 12px 36px;
-          font-family: var(--font-mono);
-          letter-spacing: 2px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          opacity: 0; 
-          transform: translateY(20px);
-        }
-        
-        .enter-btn:hover {
-          background: rgba(147, 51, 234, 0.2);
-          border-color: #9333ea;
-          box-shadow: 0 0 20px #9333ea;
-          text-shadow: 0 0 8px #d8b4fe;
-        }
-
-        .enter-btn.visible {
-          animation: slide-up-fade 0.8s ease-out forwards;
-        }
-      `}</style>
-
       {/* ================= LOADING SCREEN ================= */}
       {isLoaderVisible && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          backgroundColor: '#050505',
-          display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-          zIndex: 9999,
+        <div className="loader-screen" style={{
           opacity: isFadingOut ? 0 : 1,
-          transition: 'opacity 0.8s ease-in-out',
           pointerEvents: isFadingOut ? 'none' : 'all',
         }}>
-          <div style={{ textAlign: 'center', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="loader-content">
             
             {/* CONTAINER */}
-            <div className={`loader-img-container animate-enter`}>
+            <div className="loader-img-container animate-enter">
                {/* 1. IMAGE (Top Layer) */}
                <img className="loader-img" src={loaderImage} alt="Loading..." />
                
@@ -220,7 +131,7 @@ export default function Landing() {
                <div className={`wave-fill ${isWaveFull ? 'full' : ''}`}></div>
             </div>
 
-            <blockquote className="animate-enter delay-1" style={{ fontFamily: 'var(--font-mono, monospace)', color: '#e5e5e5', fontSize: '1rem', maxWidth: '600px', margin: '0 auto 2.5rem auto', lineHeight: '1.6', fontStyle: 'italic', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+            <blockquote className="animate-enter delay-1 loader-quote">
               "Are you the strongest because you're Gojo Satoru, or are you Gojo Satoru because you're the strongest?"
             </blockquote>
             
@@ -263,7 +174,8 @@ export default function Landing() {
                 </div>
                 <h1 className="hero-title">Learn anything. <br /><span>Fast.</span></h1>
                 <p className="hero-subtitle">
-                  Experience personalized learning powered by intelligent AI agents that create customized lessons...
+                  Experience personalized learning powered by intelligent AI agents that create customized lessons,
+                  comprehensive study materials, and adaptive quizzes tailored just for you.
                 </p>
                 <div className="hero-cta">
                   <a href="/login" className="btn btn-primary">Start Learning</a>
