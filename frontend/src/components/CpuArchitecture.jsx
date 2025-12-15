@@ -1,6 +1,5 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react"; 
 
-// --- EMBEDDED CSS STYLES ---
 const dashboardStyles = `
 /* Define variables for standalone usage */
 :root {
@@ -210,6 +209,8 @@ export default function CpuArchitecture({
   height = "220px",
   centralLogoUrl = "/gojo.png",
 }) {
+  const [isHovered, setIsHovered] = useState(false);
+
   const connectionParams = useMemo(() => {
     return CONNECTIONS.map((_, i) => {
       const seed = (i * 12.345) % 1;
@@ -251,53 +252,43 @@ export default function CpuArchitecture({
             </mask>
           ))}
 
-          {/* === Gradients === */}
           <radialGradient id="cpu-blue-grad" fx="1">
             <stop offset="0%" stopColor="#00E8ED" />
             <stop offset="50%" stopColor="#08F" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
           <radialGradient id="cpu-yellow-grad" fx="1">
             <stop offset="0%" stopColor="#FFD800" />
             <stop offset="50%" stopColor="#FFD800" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
           <radialGradient id="cpu-pinkish-grad" fx="1">
             <stop offset="0%" stopColor="#d10c5eff" />
             <stop offset="50%" stopColor="#9e0c49ff" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
           <radialGradient id="cpu-white-grad" fx="1">
             <stop offset="0%" stopColor="white" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
           <radialGradient id="cpu-green-grad" fx="1">
             <stop offset="0%" stopColor="#22c55e" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
           <radialGradient id="cpu-orange-grad" fx="1">
             <stop offset="0%" stopColor="#f97316" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
           <radialGradient id="cpu-cyan-grad" fx="1">
             <stop offset="0%" stopColor="#06b6d4" />
             <stop offset="50%" stopColor="#4374d8ff" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
           <radialGradient id="cpu-rose-grad" fx="1">
             <stop offset="0%" stopColor="#ff002bff" />
             <stop offset="50%" stopColor="#cd1736ae" />
             <stop offset="100%" stopColor="transparent" />
           </radialGradient>
-
-          {/* Deep Saturated Purple Core Gradient */}
           <radialGradient id="core-purple-grad">
             <stop offset="0%" stopColor="#d946ef" stopOpacity="1" />
             <stop offset="40%" stopColor="#a855f7" stopOpacity="0.9" />
@@ -323,7 +314,7 @@ export default function CpuArchitecture({
           ))}
         </g>
 
-        {/* === ANIMATED FLOW ORBS (Masked) === */}
+        {/* === ANIMATED FLOW ORBS === */}
         {CONNECTIONS.map((_, i) => (
           <g key={i} mask={`url(#cpu-mask-${i})`}>
             <circle
@@ -349,7 +340,6 @@ export default function CpuArchitecture({
         {/* === Breathing Purple Core === */}
         <g transform="translate(101, 55)">
           <circle r="20" fill="url(#core-purple-grad)">
-            {/* Pulsating Size */}
             <animate
               attributeName="r"
               values="18;26;18"
@@ -359,7 +349,6 @@ export default function CpuArchitecture({
               keyTimes="0;0.5;1"
               keySplines="0.4 0 0.2 1; 0.4 0 0.2 1"
             />
-            {/* Breathing Opacity */}
             <animate
               attributeName="opacity"
               values="0.6;1;0.6"
@@ -383,19 +372,69 @@ export default function CpuArchitecture({
           filter="url(#cpu-glow-shadow)"
         />
 
-        {/* Fallback image or icon if URL fails */}
         <image
           href={centralLogoUrl}
           x="88.5"
           y="42.5"
           width="25"
           height="25"
+          style={{ pointerEvents: "none" }}
           onError={(e) => {
             e.target.style.display = 'none';
           }}
         />
 
-        {/* === Labels (CAPSULE STYLE) === */}
+        {/* === INVISIBLE HITBOX === */}
+        <circle
+          cx="101"
+          cy="55"
+          r="40" 
+          fill="transparent"
+          style={{ cursor: "pointer" }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        />
+
+        {isHovered && (
+          <foreignObject x="61" y="10" width="80" height="30" style={{ overflow: "visible", pointerEvents: "none" }}>
+            <div
+              style={{
+                background: "white",
+                color: "black",
+                padding: "2px 6px",
+                borderRadius: "6px",
+                fontSize: "8px",
+                fontWeight: "800",
+                textAlign: "center",
+                position: "relative",
+                boxShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                fontFamily: "sans-serif",
+                border: "1px solid #ccc",
+                animation: "popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              }}
+            >
+              Nah, I'd win.
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: "-4px",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  width: 0,
+                  height: 0,
+                  borderLeft: "4px solid transparent",
+                  borderRight: "4px solid transparent",
+                  borderTop: "4px solid white",
+                }}
+              />
+            </div>
+            <style>
+              {`@keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }`}
+            </style>
+          </foreignObject>
+        )}
+
+        {/* === Labels === */}
         {NODES.map((n, i) => (
           <foreignObject key={i} x={n.x - 20} y={n.y - 12} width="100" height="24">
             <div

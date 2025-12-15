@@ -3,13 +3,13 @@ import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     LayoutGrid, LogOut, PlusCircle, BookOpen, Activity, Cpu, Clock, Sparkles,
-    Loader2, CheckCircle, ArrowRight, Trash2, AlertTriangle, X, ServerCrash, ArrowLeft
+    Loader2, CheckCircle, Trash2, AlertTriangle, X, ServerCrash, ArrowLeft
 } from "lucide-react";
 import CpuArchitecture from "../components/CpuArchitecture";
 import GlobalProgressToast from "../components/GlobalProgressToast";
 import "../styles/dashboard.css";
 
-// --- CATALOG DATA  ---
+// --- CATALOG DATA ---
 const CATALOG_DATA = {
     "Mathematics": ["Calculus", "Matrix", "Multiplication", "Trigonometry", "Mensuration", "Algebra", "Geometry", "Statistics"],
     "Physics": ["Kinematics", "Thermodynamics", "Electromagnetism", "Optics", "Quantum Mechanics", "Nuclear Physics", "Astrophysics"],
@@ -24,6 +24,8 @@ const MOCK_USAGE_LOGS = [
     { id: 3, agent: "PDF", action: "Download PDF", tokens: "ongoing", time: "coming soon", status: "under progress" },
 ];
 
+const GENERATION_DURATION_MS = 3.5 * 60 * 1000;
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -32,6 +34,7 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState(location.state?.activeTab || "courses");
     const [courses, setCourses] = useState([]);
 
+    // Status: idle | running | finalizing | completed
     const [generationStatus, setGenerationStatus] = useState(() => {
         return localStorage.getItem("dash_genStatus") || "idle";
     });
@@ -57,20 +60,15 @@ export default function Dashboard() {
     // MODAL STATES
     const [deleteModal, setDeleteModal] = useState({ show: false, id: null });
     const [errorModal, setErrorModal] = useState({ show: false, message: "" });
-    
-    // CATALOG MODAL STATES
     const [catalogModal, setCatalogModal] = useState(false);
-    const [catalogStep, setCatalogStep] = useState("subject"); 
+    const [catalogStep, setCatalogStep] = useState("subject");
     const [selectedCatalogSubject, setSelectedCatalogSubject] = useState(null);
 
     // --- 2. HELPERS ---
+
     const handleLogout = useCallback(() => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("dash_genStatus");
-        localStorage.removeItem("dash_genId");
-        localStorage.removeItem("dash_newId");
-        localStorage.removeItem("dash_progress");
-        sessionStorage.removeItem("dash_session_active");
+        localStorage.clear();
+        sessionStorage.clear();
         navigate("/login");
     }, [navigate]);
 
@@ -85,9 +83,7 @@ export default function Dashboard() {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then(res => {
-                if (res.data.courses) {
-                    setCourses(res.data.courses);
-                }
+                if (res.data.courses) setCourses(res.data.courses);
             })
             .catch(err => {
                 console.error(err);
@@ -97,73 +93,113 @@ export default function Dashboard() {
             });
     }, [navigate, handleLogout]);
 
-    const startProgressLoop = useCallback(() => {
-        clearInterval(progressInterval.current);
-        progressInterval.current = setInterval(() => {
-            setProgress((old) => {
-                if (old >= 90) return 90;
-                const next = old + (old < 50 ? 5 : 1);
-                localStorage.setItem("dash_progress", next);
-                return next;
-            });
-        }, 800);
+    const resetGenerator = useCallback(() => {
+        setGenerationStatus("idle");
+        setForm({ subject: "", topic: "", standard: "" });
+        localStorage.removeItem("dash_genStatus");
+        localStorage.removeItem("dash_genId");
+        localStorage.removeItem("dash_progress");
+        localStorage.removeItem("dash_startTime");
+        localStorage.removeItem("dash_backendReady");
+        localStorage.removeItem("dash_tempId");
+        sessionStorage.removeItem("dash_session_active");
     }, []);
 
-    // --- 3. INTELLIGENT REFRESH DETECTION ---
+    const completeGeneration = useCallback(() => {
+        clearInterval(progressInterval.current);
+        setProgress(100);
+        localStorage.setItem("dash_progress", "100");
+
+        const storedId = localStorage.getItem("dash_tempId");
+        if (storedId) {
+            const newId = parseInt(storedId, 10);
+            setGeneratedCourseId(newId);
+            setNewlyCreatedId(newId);
+            localStorage.setItem("dash_genId", newId);
+            localStorage.setItem("dash_newId", newId);
+        }
+
+        setGenerationStatus("completed");
+        localStorage.setItem("dash_genStatus", "completed");
+
+        localStorage.removeItem("dash_startTime");
+        localStorage.removeItem("dash_backendReady");
+        localStorage.removeItem("dash_tempId");
+
+        fetchCourses();
+    }, [fetchCourses]);
+
+    const startProgressLoop = useCallback(() => {
+        clearInterval(progressInterval.current);
+
+        progressInterval.current = setInterval(() => {
+            const startTime = parseInt(localStorage.getItem("dash_startTime") || "0", 10);
+            const backendReady = localStorage.getItem("dash_backendReady") === "true";
+
+            if (!startTime) return;
+
+            if (backendReady) {
+                completeGeneration();
+                return;
+            }
+
+            const elapsed = Date.now() - startTime;
+            let calculatedProgress = Math.floor((elapsed / GENERATION_DURATION_MS) * 100);
+
+            if (calculatedProgress >= 99) calculatedProgress = 99;
+
+            if (elapsed >= GENERATION_DURATION_MS) {
+                setProgress(99);
+                localStorage.setItem("dash_progress", "99");
+                setGenerationStatus("finalizing");
+                localStorage.setItem("dash_genStatus", "finalizing");
+            } else {
+                setProgress(calculatedProgress);
+                localStorage.setItem("dash_progress", calculatedProgress.toString());
+            }
+        }, 1000);
+    }, [completeGeneration]);
+
+    // --- 3. REFRESH & STATE MANAGEMENT ---
     useEffect(() => {
         if (location.state?.activeTab) {
             window.history.replaceState({}, document.title);
         }
 
         const savedStatus = localStorage.getItem("dash_genStatus");
-        const isEnvironmentAlive = sessionStorage.getItem("dash_session_active") === "true";
 
-        if (savedStatus === "running") {
-            if (!isEnvironmentAlive) {
-                setGenerationStatus("idle");
-                localStorage.setItem("dash_genStatus", "idle");
-                localStorage.removeItem("dash_progress");
-                sessionStorage.removeItem("dash_session_active");
-                
-                setErrorModal({
-                    show: true,
-                    message: "Generation was interrupted. Please try again."
-                });
+        if (savedStatus === "running" || savedStatus === "finalizing") {
+            const sessionActive = sessionStorage.getItem("dash_session_active");
+            if (!sessionActive) {
+                setTimeout(() => resetGenerator(), 0);
             } else {
-                setGenerationStatus("running");
-                startProgressLoop();
+                setTimeout(() => {
+                    setGenerationStatus(savedStatus);
+                    startProgressLoop();
+                }, 0);
             }
         }
         else if (location.state?.resetForm) {
-            if (savedStatus !== "running") {
-                setGenerationStatus("idle");
-                setForm({ subject: "", topic: "", standard: "" });
-                localStorage.removeItem("dash_genStatus");
-                localStorage.removeItem("dash_genId");
-                localStorage.removeItem("dash_progress");
-                sessionStorage.removeItem("dash_session_active");
+            if (savedStatus !== "running" && savedStatus !== "finalizing") {
+                setTimeout(() => resetGenerator(), 0);
             }
         }
         else if (savedStatus === "completed") {
-            setGenerationStatus("completed");
-            setProgress(100);
-            const savedId = localStorage.getItem("dash_genId");
-            if (savedId && savedId !== "null") {
-                setGeneratedCourseId(parseInt(savedId, 10));
-            }
+            setTimeout(() => {
+                setGenerationStatus("completed");
+                setProgress(100);
+            }, 0);
         }
 
         fetchCourses();
         return () => clearInterval(progressInterval.current);
-    }, [fetchCourses, location.state, startProgressLoop]);
+    }, [fetchCourses, location.state, startProgressLoop, resetGenerator]);
 
-    // PREVENT ACCIDENTAL LEAVING
     useEffect(() => {
         const handleBeforeUnload = (e) => {
-            if (generationStatus === "running") {
+            if (generationStatus === "running" || generationStatus === "finalizing") {
                 e.preventDefault();
                 e.returnValue = "";
-                return "Generation is in progress. Leaving now will cancel it.";
             }
         };
         window.addEventListener("beforeunload", handleBeforeUnload);
@@ -174,46 +210,33 @@ export default function Dashboard() {
         let { name, value } = e.target;
         if (name === "standard") {
             if (value > 12) value = "12";
-            if (value < 0) value = "1"; 
+            if (value < 0) value = "1";
         }
         setForm({ ...form, [name]: value });
     };
 
-    const openCatalog = () => {
-        setCatalogStep("subject");
-        setCatalogModal(true);
-    };
+    const openCatalog = () => { setCatalogStep("subject"); setCatalogModal(true); };
+    const handleSubjectSelect = (subject) => { setSelectedCatalogSubject(subject); setCatalogStep("topic"); };
+    const handleTopicSelect = (topic) => { setForm(prev => ({ ...prev, subject: selectedCatalogSubject, topic: topic })); setCatalogModal(false); };
+    const handleCatalogBack = () => { setCatalogStep("subject"); setSelectedCatalogSubject(null); };
 
-    const handleSubjectSelect = (subject) => {
-        setSelectedCatalogSubject(subject);
-        setCatalogStep("topic");
-    };
-
-    const handleTopicSelect = (topic) => {
-        setForm(prev => ({
-            ...prev,
-            subject: selectedCatalogSubject,
-            topic: topic
-        }));
-        setCatalogModal(false);
-    };
-
-    const handleCatalogBack = () => {
-        setCatalogStep("subject");
-        setSelectedCatalogSubject(null);
-    };
-
-    // --- 4. ACTIONS ---
+    // --- 4. GENERATE ACTION ---
     const generateCourse = async (e) => {
         e.preventDefault();
         if (!form.topic || !form.subject || !form.standard) return alert("Please fill all fields");
 
         sessionStorage.setItem("dash_session_active", "true");
+        localStorage.removeItem("dash_backendReady");
+        localStorage.removeItem("dash_tempId");
+
+        localStorage.setItem("dash_startTime", Date.now().toString());
+
         setGenerationStatus("running");
         setProgress(0);
         localStorage.setItem("dash_progress", "0");
-        startProgressLoop();
         localStorage.setItem("dash_genStatus", "running");
+
+        startProgressLoop();
 
         try {
             const token = localStorage.getItem("token");
@@ -222,44 +245,21 @@ export default function Dashboard() {
             });
 
             if (res.data.success) {
-                clearInterval(progressInterval.current);
-                setProgress(100);
-                localStorage.setItem("dash_progress", "100");
-
                 const rawId = res.data.course_id || res.data.id || res.data.courseId;
-                const newId = rawId ? parseInt(rawId, 10) : null;
 
-                if (!newId) throw new Error("Server responded with success but no Course ID.");
+                localStorage.setItem("dash_backendReady", "true");
+                localStorage.setItem("dash_tempId", rawId);
 
-                setGeneratedCourseId(newId);
-                setGenerationStatus("completed");
-                setNewlyCreatedId(newId);
-
-                localStorage.setItem("dash_genStatus", "completed");
-                localStorage.setItem("dash_genId", newId);
-                localStorage.setItem("dash_newId", newId);
-
-                fetchCourses();
             }
         } catch (error) {
             clearInterval(progressInterval.current);
-            setGenerationStatus("idle");
-            localStorage.setItem("dash_genStatus", "idle");
-            localStorage.removeItem("dash_progress");
-            sessionStorage.removeItem("dash_session_active");
-            
+            setTimeout(() => resetGenerator(), 0);
             console.error(error);
-            setErrorModal({
-                show: true,
-                message: "Generation failed. Please try again."
-            });
+            setErrorModal({ show: true, message: "Generation failed. Please try again." });
         }
     };
 
-    const confirmDeleteRequest = (e, courseId) => {
-        e.stopPropagation();
-        setDeleteModal({ show: true, id: courseId });
-    };
+    const confirmDeleteRequest = (e, courseId) => { e.stopPropagation(); setDeleteModal({ show: true, id: courseId }); };
 
     const executeDelete = async () => {
         const courseId = deleteModal.id;
@@ -267,6 +267,7 @@ export default function Dashboard() {
 
         try {
             const token = localStorage.getItem("token");
+
             setCourses(prev => prev.filter(c => c.id !== courseId));
             setDeleteModal({ show: false, id: null });
 
@@ -275,41 +276,27 @@ export default function Dashboard() {
                 localStorage.removeItem("dash_newId");
             }
             if (courseId === generatedCourseId) {
-                setGenerationStatus("idle");
-                localStorage.removeItem("dash_genStatus");
-                localStorage.removeItem("dash_genId");
-                localStorage.removeItem("dash_progress");
-                sessionStorage.removeItem("dash_session_active");
+                setTimeout(() => resetGenerator(), 0);
             }
 
             await axios.delete(`http://localhost:5000/api/courses/${courseId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+
         } catch (error) {
-            console.error("Failed to delete course", error);
+            console.error("Error deleting course:", error);
+
             setDeleteModal({ show: false, id: null });
-            setErrorModal({ show: true, message: "Failed to delete course. Server might be unreachable." });
+            setErrorModal({ show: true, message: "Failed to delete course." });
+
             fetchCourses();
         }
     };
 
     const openCourse = (courseId) => {
         const targetId = courseId || localStorage.getItem("dash_genId");
-        
-        if (!targetId || targetId === "null" || targetId === "undefined") {
-            setErrorModal({ 
-                show: true, 
-                message: "Course ID is missing. Please create a new course." 
-            });
-            return;
-        }
-        
-        const validId = parseInt(targetId, 10);
-        if (validId === newlyCreatedId) {
-            setNewlyCreatedId(null);
-            localStorage.removeItem("dash_newId");
-        }
-        navigate(`/product/${validId}`);
+        if (targetId && targetId !== "null") navigate(`/product/${targetId}`);
+        else setErrorModal({ show: true, message: "Course ID missing." });
     };
 
     return (
@@ -319,80 +306,37 @@ export default function Dashboard() {
             {catalogModal && (
                 <div className="dashboard-modal-overlay">
                     <div className="dashboard-modal dashboard-catalog-modal">
-                        <button onClick={() => setCatalogModal(false)} className="dashboard-modal-close">
-                            <X size={20} />
-                        </button>
-                        
+                        <button onClick={() => setCatalogModal(false)} className="dashboard-modal-close"><X size={20} /></button>
                         {catalogStep === "subject" ? (
                             <div className="catalog-content">
-                                <h3 className="dashboard-modal-title" style={{textAlign: "center", marginBottom: "5px"}}>Select a Subject</h3>
-                                <div className="catalog-grid">
-                                    {Object.keys(CATALOG_DATA).map((subject) => (
-                                        <button key={subject} className="catalog-item-btn" onClick={() => handleSubjectSelect(subject)}>
-                                            {subject}
-                                        </button>
-                                    ))}
-                                </div>
+                                <h3 className="dashboard-modal-title" style={{ textAlign: "center", marginBottom: "5px" }}>Select a Subject</h3>
+                                <div className="catalog-grid">{Object.keys(CATALOG_DATA).map((s) => <button key={s} className="catalog-item-btn" onClick={() => handleSubjectSelect(s)}>{s}</button>)}</div>
                             </div>
                         ) : (
                             <div className="catalog-content">
-                                <div style={{display: "flex", alignItems: "center", marginBottom: "20px"}}>
-                                    <button onClick={handleCatalogBack} className="btn-icon-text" style={{marginRight: "15px", background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer"}}>
-                                        <ArrowLeft size={20} /> Back
-                                    </button>
-                                    <h3 className="dashboard-modal-title" style={{margin: 0}}>Select Topic</h3>
+                                <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+                                    <button onClick={handleCatalogBack} className="btn-icon-text" style={{ marginRight: "15px", background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer" }}><ArrowLeft size={20} /> Back</button>
+                                    <h3 className="dashboard-modal-title" style={{ margin: 0 }}>Select Topic</h3>
                                 </div>
-                                <div className="catalog-grid">
-                                    {CATALOG_DATA[selectedCatalogSubject]?.map((topic) => (
-                                        <button key={topic} className="catalog-item-btn" onClick={() => handleTopicSelect(topic)}>
-                                            {topic}
-                                        </button>
-                                    ))}
-                                </div>
+                                <div className="catalog-grid">{CATALOG_DATA[selectedCatalogSubject]?.map((t) => <button key={t} className="catalog-item-btn" onClick={() => handleTopicSelect(t)}>{t}</button>)}</div>
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* --- ERROR MODAL --- */}
-            {errorModal.show && (
-                <div className="dashboard-modal-overlay">
-                    <div className="dashboard-modal dashboard-modal-error">
-                        <button onClick={() => setErrorModal({ show: false, message: "" })} className="dashboard-modal-close"><X size={20} /></button>
-                        <div className="dashboard-modal-icon dashboard-modal-icon-error"><ServerCrash size={32} /></div>
-                        <h3 className="dashboard-modal-title">Attention</h3>
-                        <p className="dashboard-modal-text">{errorModal.message}</p>
-                        <button onClick={() => setErrorModal({ show: false, message: "" })} className="btn dashboard-modal-primary-btn">Dismiss</button>
-                    </div>
-                </div>
-            )}
-
-            {/* --- DELETE MODAL --- */}
-            {deleteModal.show && (
-                <div className="dashboard-modal-overlay">
-                    <div className="dashboard-modal dashboard-modal-delete">
-                        <div className="dashboard-modal-icon dashboard-modal-icon-warning"><AlertTriangle size={32} /></div>
-                        <h3 className="dashboard-modal-title">Delete Course?</h3>
-                        <div className="dashboard-modal-actions">
-                            <button onClick={() => setDeleteModal({ show: false, id: null })} className="btn dashboard-modal-btn dashboard-modal-btn-cancel">Cancel</button>
-                            <button onClick={executeDelete} className="btn dashboard-modal-btn dashboard-modal-btn-danger">Delete</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* --- ERROR & DELETE MODALS --- */}
+            {errorModal.show && (<div className="dashboard-modal-overlay"><div className="dashboard-modal dashboard-modal-error"><button onClick={() => setErrorModal({ show: false })} className="dashboard-modal-close"><X size={20} /></button><div className="dashboard-modal-icon dashboard-modal-icon-error"><ServerCrash size={32} /></div><h3 className="dashboard-modal-title">Attention</h3><p className="dashboard-modal-text">{errorModal.message}</p><button onClick={() => setErrorModal({ show: false })} className="btn dashboard-modal-primary-btn">Dismiss</button></div></div>)}
+            {deleteModal.show && (<div className="dashboard-modal-overlay"><div className="dashboard-modal dashboard-modal-delete"><div className="dashboard-modal-icon dashboard-modal-icon-warning"><AlertTriangle size={32} /></div><h3 className="dashboard-modal-title">Delete Course?</h3><div className="dashboard-modal-actions"><button onClick={() => setDeleteModal({ show: false })} className="btn dashboard-modal-btn dashboard-modal-btn-cancel">Cancel</button><button onClick={executeDelete} className="btn dashboard-modal-btn dashboard-modal-btn-danger">Delete</button></div></div></div>)}
 
             {/* --- SIDEBAR --- */}
             <aside className="sidebar">
-                <div className="user-profile">
-                    <img src="https://ui-avatars.com/api/?name=Student&background=333&color=fff" alt="Profile" className="avatar" />
-                    <div className="user-info"><h3>Student</h3><p>Pro Plan</p></div>
-                </div>
+                <div className="user-profile"><img src="https://ui-avatars.com/api/?name=Student&background=333&color=fff" alt="Profile" className="avatar" /><div className="user-info"><h3>Student</h3><p>Pro Plan</p></div></div>
                 <nav className="nav-menu">
                     <button className={`nav-item ${activeTab === "usage" ? "active" : ""}`} onClick={() => setActiveTab("usage")}><Activity size={20} /> Upcoming Features</button>
                     <div className="dashboard-sidebar-divider"></div>
                     <button className={`nav-item ${activeTab === "generate" ? "active" : ""}`} onClick={() => setActiveTab("generate")}>
-                        {generationStatus === "running" ? <Loader2 size={20} className="animate-spin" /> : <PlusCircle size={20} />} Generate Course
+                        {generationStatus === "running" || generationStatus === "finalizing" ? <Loader2 size={20} className="animate-spin" /> : <PlusCircle size={20} />} Generate Course
                     </button>
                     <button className={`nav-item ${activeTab === "courses" ? "active" : ""}`} onClick={() => setActiveTab("courses")}><LayoutGrid size={20} /> Active Courses</button>
                     <div className="dashboard-nav-spacer"></div>
@@ -402,7 +346,6 @@ export default function Dashboard() {
 
             {/* --- MAIN CONTENT --- */}
             <main className="main-content-area">
-                {/* --- ADDED GLOBAL TOAST HERE --- */}
                 <GlobalProgressToast />
 
                 {activeTab === "usage" && (
@@ -429,38 +372,40 @@ export default function Dashboard() {
                         {generationStatus === "idle" && (
                             <div className="dashboard-generate-form-shell">
                                 <header className="dashboard-header dashboard-generate-header">
-                                    <div>
-                                        <div className="dashboard-generate-icon"><Sparkles size={24} /></div>
-                                        <h1 className="dashboard-generate-title">Orchestrate New Course</h1>
-                                        <p className="dashboard-generate-subtitle">Define parameters for your personal AI swarm.</p>
-                                    </div>
+                                    <div><div className="dashboard-generate-icon"><Sparkles size={24} /></div><h1 className="dashboard-generate-title">Orchestrate New Course</h1><p className="dashboard-generate-subtitle">Define parameters for your personal AI swarm.</p></div>
                                 </header>
                                 <div className="glass-card dashboard-generate-card">
                                     <form onSubmit={generateCourse}>
-                                        <div style={{ marginBottom: "20px" }}>
-                                            <button type="button" onClick={openCatalog} className="btn-secondary" style={{width: "100%", padding: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", border: "1px dashed var(--text-quinary)", background: "rgba(41, 121, 255, 0.1)", color: "var(--text-quinary)", borderRadius: "8px", cursor: "pointer"}}>
-                                                <BookOpen size={18} /> Browse Subject & Topic Catalog
-                                            </button>
-                                        </div>
+                                        <div style={{ marginBottom: "20px" }}><button type="button" onClick={openCatalog} className="btn-secondary" style={{ width: "100%", padding: "10px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", border: "1px dashed var(--text-quinary)", background: "rgba(41, 121, 255, 0.1)", color: "var(--text-quinary)", borderRadius: "8px", cursor: "pointer" }}><BookOpen size={18} /> Browse Subject & Topic Catalog</button></div>
                                         <div className="form-group"><label className="form-label">Subject</label><input name="subject" className="form-input" placeholder="e.g. Computer Science" onChange={updateForm} value={form.subject} required /></div>
                                         <div className="form-group"><label className="form-label">Specific Topic</label><input name="topic" className="form-input" placeholder="e.g. Neural Networks" onChange={updateForm} value={form.topic} required /></div>
-                                        <div className="form-group"><label className="form-label">Grade / Proficiency</label><input name="standard" type="number" className="form-input" placeholder="1 - 12" onChange={updateForm} value={form.standard} min="1"max="12"required /></div>
+                                        <div className="form-group"><label className="form-label">Grade / Proficiency</label><input name="standard" type="number" className="form-input" placeholder="1 - 12" onChange={updateForm} value={form.standard} min="1" max="12" required /></div>
                                         <button type="submit" className="btn btn-primary dashboard-generate-submit">Initialize Agents & Build Course</button>
                                     </form>
                                 </div>
                             </div>
                         )}
 
-                        {generationStatus === "running" && (
+                        {/* RUNNING / FINALIZING */}
+                        {(generationStatus === "running" || generationStatus === "finalizing") && (
                             <div className="dashboard-running-view">
                                 <div className="dashboard-running-visual"><CpuArchitecture height="260px" centralLogoUrl="/gojo.png" /></div>
-                                <h2 className="dashboard-running-title">Constructing Curriculum...</h2>
-                                <p className="dashboard-running-text">Agents are researching {form.topic || "content"}...</p>
+                                <h2 className="dashboard-running-title">
+                                    {generationStatus === "finalizing" ? "Almost There..." : "Constructing Curriculum..."}
+                                </h2>
+                                <p className="dashboard-running-text">
+                                    {generationStatus === "finalizing" ? "Giving final touches to your course..." : `Agents are researching ${form.topic || "content"}...`}
+                                </p>
                                 <div className="dashboard-progress-wrapper">
                                     <div className="dashboard-progress-track">
-                                        <div className="dashboard-progress-fill" style={{ width: `${progress}%` }}></div>
+                                        <div
+                                            className={`dashboard-progress-fill ${generationStatus === "finalizing" ? "dashboard-progress-indeterminate" : ""}`}
+                                            style={{ width: generationStatus === "finalizing" ? "100%" : `${progress}%` }}
+                                        ></div>
                                     </div>
-                                    <span className="dashboard-progress-label">{Math.round(progress)}%</span>
+                                    <span className="dashboard-progress-label">
+                                        {generationStatus === "finalizing" ? "" : `${Math.round(progress)}%`}
+                                    </span>
                                 </div>
                             </div>
                         )}
@@ -472,7 +417,7 @@ export default function Dashboard() {
                                 <p className="dashboard-completed-text">Your personalized course has been generated.</p>
                                 <div className="dashboard-completed-actions">
                                     <button className="btn btn-primary dashboard-completed-primary-btn" onClick={() => openCourse(generatedCourseId)}>Start Learning Now</button>
-                                    <button className="btn btn-secondary" onClick={() => { setGenerationStatus("idle"); localStorage.setItem("dash_genStatus", "idle"); setForm({ subject: "", topic: "", standard: "" }); sessionStorage.removeItem("dash_session_active"); }}>Create Another</button>
+                                    <button className="btn btn-secondary" onClick={() => setTimeout(() => resetGenerator(), 0)}>Create Another</button>
                                 </div>
                             </div>
                         )}

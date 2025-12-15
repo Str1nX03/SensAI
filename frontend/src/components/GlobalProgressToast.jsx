@@ -21,12 +21,12 @@ export default function GlobalProgressToast() {
 
       if (currentStatus !== status) {
           setStatus(currentStatus);
-          if (currentStatus === "running") setIsDismissed(false);
+          if (currentStatus === "running" || currentStatus === "finalizing") setIsDismissed(false);
       }
       
       if (currentId !== courseId) setCourseId(currentId);
       
-      if (currentStatus === "running") {
+      if (currentStatus === "running" || currentStatus === "finalizing") {
          if (currentProgress !== progress) setProgress(currentProgress);
       } else if (currentStatus === "completed") {
          if (progress !== 100) setProgress(100);
@@ -57,6 +57,7 @@ export default function GlobalProgressToast() {
     }
   };
 
+  // 4. Render
   return (
     <div
       onClick={handleClick}
@@ -71,24 +72,28 @@ export default function GlobalProgressToast() {
         display: 'flex',
         alignItems: 'center',
         gap: '1rem',
-        backdropFilter: 'blur(10px)',
         opacity: 0.95,
         transition: 'all 0.3s ease',
         zIndex: 20000,
         cursor: 'pointer',
-        boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
         border: status === "completed" ? "1px solid #03ae00" : "1px solid #333"
       }}
     >
-      {status === "running" ? (
+      {/* RUNNING OR FINALIZING */}
+      {(status === "running" || status === "finalizing") ? (
         <>
           <div className="status-dot" style={{ width:'10px', height:'10px', background:'#fff', borderRadius:'50%', boxShadow:'0 0 8px rgba(255,255,255,0.6)' }}></div>
           <div>
-            <span style={{ display:'block', fontSize:'0.85rem', fontWeight:'600', color:'#fff' }}>Agents Active</span>
-            <span style={{ display:'block', fontSize:'0.75rem', color:'#888' }}>Building Course... ({progress}%)</span>
+            <span style={{ display:'block', fontSize:'0.85rem', fontWeight:'600', color:'#fff' }}>
+                {status === "finalizing" ? "Almost Ready" : "Agents Active"}
+            </span>
+            <span style={{ display:'block', fontSize:'0.75rem', color:'#888' }}>
+                {status === "finalizing" ? "Giving final touches..." : `Building Course... (${progress}%)`}
+            </span>
           </div>
         </>
       ) : (
+        /* COMPLETED */
         <>
           <div style={{ color:'#03ae00', display:'flex', alignItems:'center' }}><CheckCircle size={18} /></div>
           <div>
