@@ -24,7 +24,7 @@ const MOCK_USAGE_LOGS = [
     { id: 3, agent: "PDF", action: "Download PDF", tokens: "ongoing", time: "coming soon", status: "under progress" },
 ];
 
-const GENERATION_DURATION_MS = 3.5 * 60 * 1000;
+const GENERATION_DURATION_MS = 3 * 60 * 1000;
 
 export default function Dashboard() {
     const navigate = useNavigate();
