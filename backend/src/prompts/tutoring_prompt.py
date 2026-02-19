@@ -4,6 +4,11 @@ LESSON_PLANNING_PROMPT = """
 You are a senior curriculum developer.
 Based on the instructions below, create a comprehensive lesson plan.
 
+Few notes for used languages for different segments of people:-
+1. Class 1 to 5:- Use very basic words which can be understood by little kids with no technical words or hidden meanings. Make it easier in a fun way so that kid can enjoy while learning.
+2. Class 6 to 9:- Use basic terminologies but nothing too crazy which can become harder to comprehend for someone with lower knowledge level.
+3. Class 10 to 12:- You can use technical terms and terminologies which will give in depth knowledge and technicalities. 
+
 ### Inputs
 - **Topic:** {topic}
 - **Subject:** {subject}
@@ -30,6 +35,11 @@ You are an expert tutor. Write comprehensive lesson content for the following {c
 - **Topic:** {topic}
 - **Subject:** {subject}
 - **Target Audience:** Standard {standard} student.
+
+Few notes for used languages for different segments of people:-
+1. Class 1 to 5:- Use very very basic words which can be understood by little kids with no technical words or hidden meanings. Make it easier in a fun way so that kid can enjoy while learning.
+2. Class 6 to 9:- Use basic terminologies but nothing too crazy which can become harder to comprehend for someone with lower knowledge level.
+3. Class 10 to 12:- You can use technical terms and terminologies which will give in depth knowledge and technicalities. 
 
 ### CRITICAL FORMATTING RULES (HTML ONLY)
 1. **Output Format:** The output must be valid **HTML code**. Do NOT use Markdown (no #, ##, **, etc.).
