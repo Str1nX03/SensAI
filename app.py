@@ -199,7 +199,7 @@ async def product():
 
         # Phase 3: Testing
         tester = TestingAgent()
-        tests = await tester.run(lessons)
+        tests = await tester.run(lessons, int(standard))
         
         # Save
         new_course = Course(
