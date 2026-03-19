@@ -151,7 +151,8 @@ async def generate_course():
         print("Tutoring Agent finished.")
 
         tester = TestingAgent()
-        tests = await tester.run(lessons)
+        # Pass standard_int so the testing agent knows the grade level
+        tests = await tester.run(lessons, standard_int) 
         print("Testing Agent finished.")
 
         # 3. SAFER JSON PARSING
