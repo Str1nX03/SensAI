@@ -5,12 +5,14 @@
   grid-template-areas: 'stack';
   place-items: center;
   margin-top: 4rem;
-  margin-bottom: 6rem; 
-  padding: 4rem 2rem; 
+  margin-bottom: 6rem;
+  padding: 4rem 2rem;
 }
 
 @keyframes dc-fade-in {
-  to { opacity: 1; }
+  to {
+    opacity: 1;
+  }
 }
 
 /* --- INDIVIDUAL CARD STYLING --- */
@@ -19,32 +21,32 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  
+
   /* Dimensions */
-  min-height: 14rem; 
-  width: 24rem;      
-  
+  min-height: 14rem;
+  width: 24rem;
+
   /* Appearance */
   border-radius: 1rem;
   border: 2px solid var(--border-subtle);
   background: rgba(20, 20, 20, 0.85);
   backdrop-filter: blur(8px);
   user-select: none;
-  
+
   /* Spacing */
   padding: 1.5rem;
-  
+
   /* Transition */
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   grid-area: stack;
-  box-shadow: -10px 10px 20px rgba(0,0,0,0.5);
+  box-shadow: -10px 10px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* --- HOVER STATE  --- */
 .dc-card:hover {
   border-color: rgba(255, 255, 255, 0.4);
   background: rgba(30, 30, 30, 1);
-  box-shadow: -20px 40px 60px rgba(0,0,0,0.7);
+  box-shadow: -20px 40px 60px rgba(0, 0, 0, 0.7);
   filter: grayscale(0%) brightness(1);
 }
 
@@ -55,7 +57,7 @@
   top: -5%;
   height: 110%;
   width: 20rem;
-  background: linear-gradient(to left, rgba(0,0,0,1), transparent);
+  background: linear-gradient(to left, rgba(0, 0, 0, 1), transparent);
   pointer-events: none;
   z-index: -1;
 }
@@ -106,6 +108,7 @@
   transform: skewY(-8deg) translateX(0) translateY(0);
   filter: grayscale(100%) brightness(0.7);
 }
+
 .dc-card-1:hover {
   transform: skewY(-9deg) translateX(0) translateY(-7rem);
 }
@@ -116,6 +119,7 @@
   transform: skewY(-8deg) translateX(3rem) translateY(4rem);
   filter: grayscale(100%) brightness(0.8);
 }
+
 .dc-card-2:hover {
   transform: skewY(-9deg) translateX(3rem) translateY(-3rem);
 }
@@ -125,6 +129,7 @@
   z-index: 3;
   transform: skewY(-8deg) translateX(6rem) translateY(8rem);
 }
+
 .dc-card-3:hover {
   transform: skewY(-9deg) translateX(6rem) translateY(3rem);
 }

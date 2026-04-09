@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 
 // ---------------------------
-const loaderImage = "/load.png"; 
+const loaderImage = "/load.png";
 // ---------------------------
 
 import ShaderBackground from "../components/ShaderBackground";
-import ParticleNetwork from "../components/ParticleNetwork"; 
+import ParticleNetwork from "../components/ParticleNetwork";
 import DisplayCards from "../components/DisplayCards";
 import { initAnimations } from "../utils/animation";
 import Navbar from "../components/Navbar";
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Landing() {
+  const [showLoader, setShowLoader] = useState(false);
   const [loadingState, setLoadingState] = useState(() => {
     const hasSeenIntro = sessionStorage.getItem("introShown");
     return hasSeenIntro ? 'complete' : 'loading';
@@ -29,14 +30,23 @@ export default function Landing() {
   const [isHovering, setIsHovering] = useState(false);
   const animationsInitialized = useRef(false);
 
+  useEffect(() => {
+    if (loadingState === 'loading') {
+      sessionStorage.setItem("introShown", "true");
+    }
+  }, [loadingState]);
+
   // --- 1. INITIAL LOAD SEQUENCE ---
   useEffect(() => {
+    // Force the dark theme for this public page
+    document.body.setAttribute("data-theme", "dark");
+
     if (loadingState === 'complete') {
-       if (!animationsInitialized.current) {
-         initAnimations(); 
-         animationsInitialized.current = true;
-       }
-       return; 
+      if (!animationsInitialized.current) {
+        initAnimations();
+        animationsInitialized.current = true;
+      }
+      return;
     }
 
     if (loadingState !== 'loading') return;
@@ -46,29 +56,29 @@ export default function Landing() {
       const img = new Image();
       img.src = loaderImage;
       img.onload = resolve;
-      img.onerror = resolve; 
+      img.onerror = resolve;
     });
 
     Promise.all([minWaitTime, imageLoad]).then(() => {
       setLoadingState('filling');
       setTimeout(() => {
         setLoadingState('ready');
-      }, 2500); 
+      }, 2500);
     });
   }, [loadingState]);
 
   // --- 2. ENTER HANDLER ---
   const handleEnterSite = () => {
-    setLoadingState('entering'); 
+    setLoadingState('entering');
     sessionStorage.setItem("introShown", "true");
 
     setTimeout(() => {
-      setLoadingState('complete'); 
+      setLoadingState('complete');
       if (!animationsInitialized.current) {
         initAnimations();
         animationsInitialized.current = true;
       }
-    }, 800); 
+    }, 800);
   };
 
   // --- 3. FEATURE ROTATION ---
@@ -121,40 +131,40 @@ export default function Landing() {
           pointerEvents: isFadingOut ? 'none' : 'all',
         }}>
           <div className="loader-content">
-            
+
             {/* CONTAINER */}
             <div className="loader-img-container animate-enter">
-               {/* 1. IMAGE (Top Layer) */}
-               <img className="loader-img" src={loaderImage} alt="Loading..." />
-               
-               {/* 2. WAVE (Bottom Layer) */}
-               <div className={`wave-fill ${isWaveFull ? 'full' : ''}`}></div>
+              {/* 1. IMAGE (Top Layer) */}
+              <img className="loader-img" src={loaderImage} alt="Loading..." />
+
+              {/* 2. WAVE (Bottom Layer) */}
+              <div className={`wave-fill ${isWaveFull ? 'full' : ''}`}></div>
             </div>
 
             <blockquote className="animate-enter delay-1 loader-quote">
               "Are you the strongest because you're Gojo Satoru, or are you Gojo Satoru because you're the strongest?"
             </blockquote>
-            
+
             {loadingState === 'ready' && (
-              <button 
-                className="enter-btn visible" 
+              <button
+                className="enter-btn visible"
                 onClick={handleEnterSite}
               >
                 ENTER DOMAIN
               </button>
             )}
-            
+
             {loadingState !== 'ready' && <div style={{ height: '46px' }}></div>}
           </div>
         </div>
       )}
 
       {/* ================= MAIN CONTENT ================= */}
-      <div style={{ 
-        opacity: loadingState === 'complete' ? 1 : 0, 
+      <div style={{
+        opacity: loadingState === 'complete' ? 1 : 0,
         transition: 'opacity 1s ease-in',
         height: '100%',
-        overflow: loadingState === 'complete' ? 'auto' : 'hidden' 
+        overflow: loadingState === 'complete' ? 'auto' : 'hidden'
       }}>
         <Navbar items={NAV_ITEMS} />
         <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none" }}>
@@ -165,7 +175,7 @@ export default function Landing() {
             <div className="hero-grid">
               <div className="hero-left-shader">
                 <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
-                   <ShaderBackground />
+                  <ShaderBackground />
                 </div>
               </div>
               <div className="hero-right-content">
@@ -191,22 +201,22 @@ export default function Landing() {
             </h2>
             <div className="features-content-grid">
               <div className="features-visual" onMouseLeave={handleMouseLeaveArea}>
-                <DisplayCards 
-                  cards={cardDataForDisplay} 
-                  activeIndex={activeFeatureIndex} 
+                <DisplayCards
+                  cards={cardDataForDisplay}
+                  activeIndex={activeFeatureIndex}
                   onCardHover={handleCardHover}
                 />
               </div>
               <div className="features-text-panel">
-                 <div key={activeFeatureIndex} className="feature-description-box">
-                   <div className="feature-header">
-                     <span className="feature-icon">{features[activeFeatureIndex].icon}</span>
-                     <h3 className="feature-title">{features[activeFeatureIndex].detailTitle}</h3>
-                   </div>
-                   <div className="feature-divider"></div>
-                   <p className="feature-body">{features[activeFeatureIndex].detailDesc}</p>
-                   <div className="feature-meta">{features[activeFeatureIndex].date}</div>
-                 </div>
+                <div key={activeFeatureIndex} className="feature-description-box">
+                  <div className="feature-header">
+                    <span className="feature-icon">{features[activeFeatureIndex].icon}</span>
+                    <h3 className="feature-title">{features[activeFeatureIndex].detailTitle}</h3>
+                  </div>
+                  <div className="feature-divider"></div>
+                  <p className="feature-body">{features[activeFeatureIndex].detailDesc}</p>
+                  <div className="feature-meta">{features[activeFeatureIndex].date}</div>
+                </div>
               </div>
             </div>
           </section>

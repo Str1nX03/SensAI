@@ -22,10 +22,10 @@ export default function Navbar({ items }) {
               <div className="nav-icon-container">
                 <Icon size={18} />
               </div>
-              
+
               <span className="nav-text">{item.name}</span>
 
-              {active && <span className="nav-glow"/>}
+              {active && <span className="nav-glow" />}
             </Link>
           );
         })}

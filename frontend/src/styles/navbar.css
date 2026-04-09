@@ -63,7 +63,7 @@
   width: 65%;
   height: 6px;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(255,255,255,0.6) 0, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0, transparent 70%);
   opacity: 0.8;
   pointer-events: none;
 }
@@ -73,20 +73,21 @@
 .nav-icon-container {
   display: none;
 }
+
 .nav-text {
   display: block;
 }
 
 /* Mobile: Switch to Icons */
 @media (max-width: 768px) {
-  .nav-pill { 
+  .nav-pill {
     padding: 0.6rem 0.8rem;
   }
-  
-  .nav-text { 
+
+  .nav-text {
     display: none;
   }
-  
+
   .nav-icon-container {
     display: flex;
     align-items: center;

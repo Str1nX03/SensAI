@@ -32,7 +32,7 @@ const useBoxGeometry = () => {
 const Box = ({ geometry, position, rotation }) => {
   return (
     <mesh geometry={geometry} position={position} rotation={rotation}>
-      <meshPhysicalMaterial 
+      <meshPhysicalMaterial
         color="#232323"
         metalness={1}
         roughness={0.3}
@@ -62,12 +62,12 @@ const AnimatedBoxes = () => {
 
   useFrame((state, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.x += delta * 0.02; 
+      groupRef.current.rotation.x += delta * 0.02;
     }
   });
 
   const boxes = useMemo(() => Array.from({ length: 50 }, (_, index) => ({
-    position: [(index - 25) * 0.8, 0, 0], 
+    position: [(index - 25) * 0.8, 0, 0],
     rotation: [(index - 10) * 0.1, Math.PI / 2, 0],
     id: index
   })), []);
@@ -89,14 +89,14 @@ const AnimatedBoxes = () => {
 export default function BoxWaves() {
   return (
     <div style={{ width: '100%', height: '100vh', position: 'absolute', top: 0, left: 0 }}>
-      <Canvas 
-         camera={{ position: [0, 0, 15], fov: 45 }} 
-         dpr={[1, 2]}
+      <Canvas
+        camera={{ position: [0, 0, 15], fov: 45 }}
+        dpr={[1, 2]}
       >
         <ambientLight intensity={10} />
         <directionalLight position={[10, 10, 5]} intensity={20} />
         <pointLight position={[0, 0, 10]} intensity={15} color="#ffffff" />
-        
+
         <AnimatedBoxes />
       </Canvas>
     </div>

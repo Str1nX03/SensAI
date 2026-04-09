@@ -44,24 +44,24 @@ export default function StackedCarousel({ testimonials }) {
 
   return (
     <div className="stacked-wrapper">
-      
+
       <div className="card-stack animate-card">
-        
-        <div 
-            className="card-layer card-back-left"
-            style={{ backgroundImage: `url(${nextPerson.src})` }}
+
+        <div
+          className="card-layer card-back-left"
+          style={{ backgroundImage: `url(${nextPerson.src})` }}
         />
-        
-        <div 
-            className="card-layer card-back-right"
-            style={{ backgroundImage: `url(${prevPerson.src})` }}
+
+        <div
+          className="card-layer card-back-right"
+          style={{ backgroundImage: `url(${prevPerson.src})` }}
         />
 
         {/* Foreground Card (Active) */}
         <div className="card-layer card-front">
-          <img 
-            src={activePerson.src} 
-            alt={activePerson.name} 
+          <img
+            src={activePerson.src}
+            alt={activePerson.name}
             className="card-img"
           />
         </div>
@@ -71,31 +71,31 @@ export default function StackedCarousel({ testimonials }) {
       {/* RIGHT: Content */}
       <div className="content-col">
         <div key={active} className="animate-text">
-            <h2 className="person-name">{activePerson.name}</h2>
-            <p className="person-role">{activePerson.designation}</p>
-            
-            <p className="person-quote">"{activePerson.quote}"</p>
+          <h2 className="person-name">{activePerson.name}</h2>
+          <p className="person-role">{activePerson.designation}</p>
 
-            {activePerson.linkedin && (
-            <a 
-                href={activePerson.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="linkedin-btn"
+          <p className="person-quote">"{activePerson.quote}"</p>
+
+          {activePerson.linkedin && (
+            <a
+              href={activePerson.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="linkedin-btn"
             >
-                <Linkedin size={18} />
-                <span>LinkedIn</span>
+              <Linkedin size={18} />
+              <span>LinkedIn</span>
             </a>
-            )}
+          )}
         </div>
 
         <div className="nav-row">
-            <button onClick={handlePrev} className="nav-btn">
-                <ArrowLeft size={20} />
-            </button>
-            <button onClick={handleNext} className="nav-btn">
-                <ArrowRight size={20} />
-            </button>
+          <button onClick={handlePrev} className="nav-btn">
+            <ArrowLeft size={20} />
+          </button>
+          <button onClick={handleNext} className="nav-btn">
+            <ArrowRight size={20} />
+          </button>
         </div>
       </div>
     </div>

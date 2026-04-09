@@ -25,20 +25,20 @@ createRoot(document.getElementById("root")).render(
       <Route path="/product/:id" element={<Product />} />
 
       {/* 2. ADD THIS TEMPORARY DEV ROUTE */}
-      <Route 
-        path="/dev-cpu" 
+      <Route
+        path="/dev-cpu"
         element={
-          <div style={{ 
-            width: "100vw", 
-            height: "100vh", 
+          <div style={{
+            width: "100vw",
+            height: "100vh",
             backgroundColor: "#050505",
-            display: "flex", 
-            alignItems: "center", 
-            justifyContent: "center" 
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
           }}>
             <CpuArchitecture width="80%" height="60%" />
           </div>
-        } 
+        }
       />
 
     </Routes>

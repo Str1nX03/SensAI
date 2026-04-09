@@ -3,7 +3,7 @@
     min-height: 100vh;
     width: 100%;
     display: flex;
-    flex-direction: column; 
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 2rem;
@@ -52,8 +52,11 @@
     max-width: 500px;
     margin: 0 auto;
 }
+
 @media (min-width: 1024px) {
-    .hero-subtitle { margin: 0; }
+    .hero-subtitle {
+        margin: 0;
+    }
 }
 
 .auth-card {
@@ -68,11 +71,28 @@
     text-align: center;
 }
 
-.auth-title { font-size: 1.8rem; margin-bottom: .4rem; color: #fff; }
-.auth-sub { color: var(--text-secondary); margin-bottom: 2rem; }
+.auth-title {
+    font-size: 1.8rem;
+    margin-bottom: .4rem;
+    color: #fff;
+}
 
-.form-group { margin-bottom: 1.2rem; text-align: left; }
-label { color: var(--text-secondary); font-size: .85rem; display: block; margin-bottom: 0.5rem; }
+.auth-sub {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+    text-align: left;
+}
+
+label {
+    color: var(--text-secondary);
+    font-size: .85rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
 
 .form-input {
     width: 100%;
@@ -102,11 +122,25 @@ label { color: var(--text-secondary); font-size: .85rem; display: block; margin-
     cursor: pointer;
     transition: background 0.3s;
 }
-.login-btn:hover { background: #3a8ecc; }
 
-.auth-switch { margin-top: 1.5rem; font-size: .9rem; color: #ccc; }
-.auth-switch a { color: #50aaff; text-decoration: none; }
-.auth-switch a:hover { text-decoration: underline; }
+.login-btn:hover {
+    background: #3a8ecc;
+}
+
+.auth-switch {
+    margin-top: 1.5rem;
+    font-size: .9rem;
+    color: #ccc;
+}
+
+.auth-switch a {
+    color: #50aaff;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
 
 .back-home {
     display: block;
@@ -115,7 +149,10 @@ label { color: var(--text-secondary); font-size: .85rem; display: block; margin-
     color: var(--text-secondary);
     text-decoration: none;
 }
-.back-home:hover { color: #fff; }
+
+.back-home:hover {
+    color: #fff;
+}
 
 .auth-animate {
     opacity: 0;
@@ -131,5 +168,8 @@ label { color: var(--text-secondary); font-size: .85rem; display: block; margin-
 }
 
 @keyframes rise {
-    to { opacity: 1; transform: translateY(0); }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

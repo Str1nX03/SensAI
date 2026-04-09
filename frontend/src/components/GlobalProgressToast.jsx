@@ -1,109 +1,99 @@
-import React, { useState, useEffect } from "react";
-import { CheckCircle, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function GlobalProgressToast() {
-  const navigate = useNavigate();
-  
-  // 1. Initialize State
-  const [status, setStatus] = useState(() => localStorage.getItem("dash_genStatus") || "idle");
-  const [progress, setProgress] = useState(() => parseInt(localStorage.getItem("dash_progress") || "0", 10));
-  const [courseId, setCourseId] = useState(() => localStorage.getItem("dash_genId"));
-  
-  const [isDismissed, setIsDismissed] = useState(false);
+    const navigate = useNavigate();
+    const [genState, setGenState] = useState({ status: 'idle', progress: 0, id: null });
+    const [visible, setVisible] = useState(true);
 
-  // 2. The Polling Loop
-  useEffect(() => {
-    const checkInterval = setInterval(() => {
-      const currentStatus = localStorage.getItem("dash_genStatus") || "idle";
-      const currentProgress = parseInt(localStorage.getItem("dash_progress") || "0", 10);
-      const currentId = localStorage.getItem("dash_genId");
+    // Poll localStorage to sync the generation state across tabs/pages
+    useEffect(() => {
+        const checkStorage = () => {
+            const status = localStorage.getItem('dash_genStatus') || 'idle';
+            const progress = parseInt(localStorage.getItem('dash_progress') || '0', 10);
+            const id = localStorage.getItem('dash_genId');
+            setGenState({ status, progress, id });
+        };
+        checkStorage();
+        const interval = setInterval(checkStorage, 500);
+        return () => clearInterval(interval);
+    }, []);
 
-      if (currentStatus !== status) {
-          setStatus(currentStatus);
-          if (currentStatus === "running" || currentStatus === "finalizing") setIsDismissed(false);
-      }
-      
-      if (currentId !== courseId) setCourseId(currentId);
-      
-      if (currentStatus === "running" || currentStatus === "finalizing") {
-         if (currentProgress !== progress) setProgress(currentProgress);
-      } else if (currentStatus === "completed") {
-         if (progress !== 100) setProgress(100);
-      }
-      
-    }, 500);
+    // 25-Second Auto-Hide Timer
+    useEffect(() => {
+        if (genState.status === 'completed') {
+            setVisible(true);
+            const timer = setTimeout(() => {
+                setVisible(false);
+                // Clear storage so it doesn't pop back up on page refresh
+                localStorage.removeItem('dash_genStatus');
+                localStorage.removeItem('dash_genId');
+            }, 25000); // 25 seconds
 
-    return () => clearInterval(checkInterval);
-  }, [status, progress, courseId]);
+            return () => clearTimeout(timer);
+        } else {
+            setVisible(true);
+        }
+    }, [genState.status]);
 
-  // 3. Auto-Dismiss Logic
-  useEffect(() => {
-    if (status === "completed") {
-      const timer = setTimeout(() => {
-        setIsDismissed(true);
-      }, 5000); 
-      return () => clearTimeout(timer);
-    }
-  }, [status]);
+    if (genState.status === 'idle' || !visible) return null;
 
-  if (status === "idle" || isDismissed) return null;
+    const isDone = genState.status === 'completed';
 
-  const handleClick = () => {
-    if (status === "completed" && courseId) {
-      navigate(`/product/${courseId}`);
-    } else {
-      navigate("/dashboard", { state: { activeTab: "generate" } });
-    }
-  };
+    // Click to Redirect Handler
+    // Inside GlobalProgressToast.jsx
 
-  // 4. Render
-  return (
-    <div
-      onClick={handleClick}
-      className={`floating-status ${status === "completed" ? "floating-status--completed" : "floating-status--running"}`}
-      style={{ 
-        position: 'fixed',
-        bottom: '2rem',
-        right: '2rem',
-        background: '#0a0a0a',
-        borderRadius: '12px',
-        padding: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        opacity: 0.95,
-        transition: 'all 0.3s ease',
-        zIndex: 20000,
-        cursor: 'pointer',
-        border: status === "completed" ? "1px solid #03ae00" : "1px solid #333"
-      }}
-    >
-      {/* RUNNING OR FINALIZING */}
-      {(status === "running" || status === "finalizing") ? (
-        <>
-          <div className="status-dot" style={{ width:'10px', height:'10px', background:'#fff', borderRadius:'50%', boxShadow:'0 0 8px rgba(255,255,255,0.6)' }}></div>
-          <div>
-            <span style={{ display:'block', fontSize:'0.85rem', fontWeight:'600', color:'#fff' }}>
-                {status === "finalizing" ? "Almost Ready" : "Agents Active"}
-            </span>
-            <span style={{ display:'block', fontSize:'0.75rem', color:'#888' }}>
-                {status === "finalizing" ? "Giving final touches..." : `Building Course... (${progress}%)`}
-            </span>
-          </div>
-        </>
-      ) : (
-        /* COMPLETED */
-        <>
-          <div style={{ color:'#03ae00', display:'flex', alignItems:'center' }}><CheckCircle size={18} /></div>
-          <div>
-            <span style={{ display:'block', fontSize:'0.85rem', fontWeight:'600', color:'#fff' }}>Course Ready!</span>
-            <span style={{ display:'inline-flex', alignItems:'center', gap:'4px', fontSize:'0.75rem', color:'#03ae00', fontWeight:'bold' }}>
-                Click to Open <ArrowRight size={10} />
-            </span>
-          </div>
-        </>
-      )}
-    </div>
-  );
+    const handleClick = () => {
+        if (isDone && genState.id) {
+            // 1. CLEAR the status so the toast disappears immediately
+            localStorage.removeItem('dash_genStatus');
+            localStorage.removeItem('dash_genId');
+            localStorage.removeItem('dash_progress');
+            localStorage.removeItem('dash_tempId');
+            localStorage.removeItem('dash_backendReady');
+
+            // 2. Update local state so it stops rendering before the navigate happens
+            setGenState({ status: 'idle', progress: 0, id: null });
+            setVisible(false);
+
+            // 3. Navigate to the course
+            navigate(`/product/${genState.id}`);
+        }
+    };
+
+    return (
+        <div
+            className={`floating-status ${isDone ? 'floating-status--completed' : 'floating-status--running'}`}
+            onClick={isDone ? handleClick : undefined}
+            style={{
+                cursor: isDone ? 'pointer' : 'default',
+                paddingBottom: isDone ? '1rem' : '0.75rem' // Extra space for the timer bar
+            }}
+        >
+            {isDone ? (
+                <CheckCircle size={20} color="var(--success)" style={{ flexShrink: 0 }} />
+            ) : (
+                <Loader2 size={20} className="animate-spin" color="var(--accent)" style={{ flexShrink: 0 }} />
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+                    {isDone ? 'Course Ready!' : 'Generating Course...'}
+                </strong>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    {isDone
+                        ? 'Click to start learning'
+                        : (genState.status === 'finalizing' || genState.progress >= 99)
+                            ? 'Adding finishing touches...'
+                            : `${genState.progress}% complete`}
+                </span>
+            </div>
+
+            {/* Hint Arrow to show it's a clickable button */}
+            {isDone && <ArrowRight size={16} color="var(--text-secondary)" style={{ flexShrink: 0, marginLeft: '5px' }} />}
+
+            {/* The 25-second fading timeout bar */}
+            {isDone && <div className="toast-timeout-bar" />}
+        </div>
+    );
 }

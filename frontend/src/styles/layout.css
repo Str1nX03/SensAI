@@ -74,7 +74,8 @@
   padding: 0;
 }
 
-.nav-item:hover, .nav-item.active {
+.nav-item:hover,
+.nav-item.active {
   color: rgb(255, 0, 0);
 }
 
@@ -90,13 +91,14 @@
   padding: 3rem 4rem;
   overflow-y: auto;
   position: relative;
-  box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
 }
 
 /* Scrollbar styling for content */
 .main-content-area::-webkit-scrollbar {
   width: 8px;
 }
+
 .main-content-area::-webkit-scrollbar-thumb {
   background-color: #ddd;
   border-radius: 4px;

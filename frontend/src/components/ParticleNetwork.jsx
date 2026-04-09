@@ -24,15 +24,15 @@ export default function ParticleNetwork() {
     const count = 600;
     const pos = new Float32Array(count * 3);
     for (let i = 0; i < count * 3; i++) {
-        pos[i] = (Math.random() - 0.5) * 100;
+      pos[i] = (Math.random() - 0.5) * 100;
     }
     particles.setAttribute('position', new THREE.BufferAttribute(pos, 3));
 
     const material = new THREE.PointsMaterial({
-        size: 0.25,
-        color: 0x9a8cff,
-        transparent: true,
-        opacity: 0.45
+      size: 0.25,
+      color: 0x9a8cff,
+      transparent: true,
+      opacity: 0.45
     });
 
     const mesh = new THREE.Points(particles, material);
@@ -41,63 +41,63 @@ export default function ParticleNetwork() {
     // 3. INTERACTION
     let mouseX = 0, mouseY = 0;
     const handleMouseMove = (e) => {
-        mouseX = (e.clientX / window.innerWidth) - 0.5;
-        mouseY = (e.clientY / window.innerHeight) - 0.5;
+      mouseX = (e.clientX / window.innerWidth) - 0.5;
+      mouseY = (e.clientY / window.innerHeight) - 0.5;
     };
     window.addEventListener('mousemove', handleMouseMove);
 
     // 4. ANIMATION
     let animationId;
     const animate = () => {
-        animationId = requestAnimationFrame(animate);
-        
-        mesh.rotation.y += 0.0009;
-        mesh.rotation.x += 0.0004;
-        
-        // Gentle camera float
-        camera.position.x += (mouseX * 8 - camera.position.x) * 0.05;
-        camera.position.y += (-mouseY * 8 - camera.position.y) * 0.05;
-        camera.lookAt(scene.position);
+      animationId = requestAnimationFrame(animate);
 
-        renderer.render(scene, camera);
+      mesh.rotation.y += 0.0009;
+      mesh.rotation.x += 0.0004;
+
+      // Gentle camera float
+      camera.position.x += (mouseX * 8 - camera.position.x) * 0.05;
+      camera.position.y += (-mouseY * 8 - camera.position.y) * 0.05;
+      camera.lookAt(scene.position);
+
+      renderer.render(scene, camera);
     };
     animate();
 
     // 5. RESIZE
     const handleResize = () => {
-        if (!currentMount) return;
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+      if (!currentMount) return;
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
     };
     window.addEventListener('resize', handleResize);
 
     // 6. CLEANUP
     return () => {
-        cancelAnimationFrame(animationId);
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('resize', handleResize);
-        if (currentMount && renderer.domElement) {
-            currentMount.removeChild(renderer.domElement);
-        }
-        particles.dispose();
-        material.dispose();
-        renderer.dispose();
+      cancelAnimationFrame(animationId);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+      if (currentMount && renderer.domElement) {
+        currentMount.removeChild(renderer.domElement);
+      }
+      particles.dispose();
+      material.dispose();
+      renderer.dispose();
     };
   }, []);
 
   return (
-    <div 
-      ref={mountRef} 
-      style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        width: '100vw', 
-        height: '100vh', 
+    <div
+      ref={mountRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
         zIndex: -1,
         pointerEvents: 'none'
-      }} 
+      }}
     />
   );
 }

@@ -12,7 +12,7 @@ function DisplayCard({
   onHover
 }) {
   return (
-    <div 
+    <div
       className={`dc-card ${variantClass} ${className || ''} ${isActive ? 'active' : ''}`}
       onMouseEnter={onHover}
     >
@@ -31,7 +31,7 @@ function DisplayCard({
 }
 
 export default function DisplayCards({ cards, activeIndex, onCardHover }) {
-  
+
   const cardData = cards && cards.length === 3 ? [
     { ...cards[0], variantClass: "dc-card-1" },
     { ...cards[1], variantClass: "dc-card-2" },
@@ -45,9 +45,9 @@ export default function DisplayCards({ cards, activeIndex, onCardHover }) {
   return (
     <div className="dc-grid">
       {cardData.map((card, index) => (
-        <DisplayCard 
-          key={index} 
-          {...card} 
+        <DisplayCard
+          key={index}
+          {...card}
           isActive={index === activeIndex}
           onHover={() => onCardHover && onCardHover(index)}
         />

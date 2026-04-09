@@ -28,7 +28,8 @@
     }
 
     .auth-right {
-        flex: 0 0 400px; /* Fixed width for the form container */
+        flex: 0 0 400px;
+        /* Fixed width for the form container */
         display: flex;
         justify-content: flex-end;
     }
@@ -60,8 +61,13 @@
 }
 
 @media (min-width: 1024px) {
-    .hero-subtitle { margin: 0; }
-    .hero-title { font-size: 4.5rem; }
+    .hero-subtitle {
+        margin: 0;
+    }
+
+    .hero-title {
+        font-size: 4.5rem;
+    }
 }
 
 /* --- Right Side  --- */
@@ -69,13 +75,13 @@
     width: 100%;
     max-width: 400px;
     padding: 2.5rem;
-    
+
     /* Glassmorphism Styles */
-    background: rgba(10, 10, 10, 0.6); 
+    background: rgba(10, 10, 10, 0.6);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    
+
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     text-align: center;
