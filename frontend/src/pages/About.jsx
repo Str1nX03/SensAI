@@ -32,8 +32,8 @@ export default function AboutUs() {
     {
       name: "U S Jagan Krishna",
       designation: "Frontend Developer",
-      quote: "I like to quote: What is this earth without art? Just a rock.",
-      src: "jagan.jpg",
+      quote: "I like films and music, also I like to quoteS: What is this earth without art? Just a rock.",
+      src: "jagan.png",
       linkedin: "https://www.linkedin.com/in/u-s-jagan-krishna-b60a88277/"
     },
     {
